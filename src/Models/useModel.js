@@ -1,0 +1,43 @@
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+    nickname: {
+        type: String,
+        required: true
+    },
+
+    password: {
+        type: String,
+        required: true
+    },
+
+    patent: {
+        type: String,
+        required: true
+    },
+
+    classes: {
+        type: Array,
+        required: true
+    },
+
+    status: {
+        type: String,
+        enum: ["Pendente", "Ativo", "Desativado", "Exonerado", "Banido", "Reformado"],
+        required: true
+    },
+    
+    userType: {
+        type: String,
+        enum: ["User"],
+        required: true,
+    },
+})
+
+
+const User = mongoose.model('User', userSchema);
+module.exports = {
+    User,
+    userSchema
+}
+
