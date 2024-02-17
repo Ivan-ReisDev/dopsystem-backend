@@ -21,6 +21,11 @@ const userSchema = new mongoose.Schema({
         required: true
     },
 
+    teans: {
+        type: Array,
+        required: true
+    },
+
     status: {
         type: String,
         enum: ["Pendente", "Ativo", "Desativado", "Exonerado", "Banido", "Reformado"],

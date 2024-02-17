@@ -3,9 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 // Função para gerar um token JWT com base no ID do usuário
-
 const apiHabbo = `https://www.habbo.com.br/api/public/users?name=`
-
 const GenerateToken = (id) => {
   return jwt.sign(
     { id },
@@ -15,14 +13,6 @@ const GenerateToken = (id) => {
     }
   );
 };
-
-
-//Gerar prefixo PASSAR PARA O FRONT-END
-const generatePreFixo = () => {
-  const code = Math.ceil(Math.random() * 9999);
-  return `DOP-8941`
-  //DOP-8941
-}
 
 //Conecta com a API do habbo
 const connectHabbo = async (nick) => {
@@ -42,38 +32,30 @@ const serviceControllerUser = {
 
     try {
       const formdata = req.body;
-      const { nick, passwordConf, userType, patent, classes } = formdata;
-      const password = "DOPsystem@@2024"
-      const motto = await connectHabbo(nick);
-      const confirmPreFixo = generatePreFixo()
+      const { nick, patent, classes } = formdata;
+      const passwordConf = "DOPsystem@@2024"
       const nickname = await User.findOne({ nick });
-      if (motto.motto !== confirmPreFixo) {
-        return res.status(422).json({ error: "Ops! Seu código de acesso está errado, por favor verifique sua missão." });
-      }
-
       if (nickname) {
         return res.status(422).json({ error: "Ops! Esse usuário já existe" });
       }
 
-      if (passwordConf !== password) {
-        return res.status(422).json({ error: "Senha incorreta tente novamente." });
-      }
       const saltHash = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(password, saltHash);
+      const passwordHash = await bcrypt.hash(passwordConf, saltHash);
 
       const newUser = {
         nickname: nick,
         patent: patent,
         classes: classes,
+        teans: '',
         status: 'Pendente',
         password: passwordHash,
-        userType: userType,
+        userType: 'User',
       };
 
       const createUser = await User.create(newUser);
-      return !createUser 
-      ? res.status(422).json({ error: "Houve um erro, tente novamente mais tarde" })
-      : res.status(201).json({ msg: "Sua conta foi criada agora precisa ser aceita por um administrador." });
+      return !createUser
+        ? res.status(422).json({ error: "Houve um erro, tente novamente mais tarde" })
+        : res.status(201).json({ msg: "Sua conta foi criada agora precisa ser aceita por um administrador." });
 
     } catch (error) {
       console.error("Erro ao registrar", error);
@@ -83,83 +65,108 @@ const serviceControllerUser = {
 
   // função para efetuar o login.
   login: async (req, res) => {
-    const { nick, password } = req.body;
-    const checkUser = await User.findOne({ nick })
 
-    if (!checkUser) {
-      return res.status(400).json({ error: 'Ops! Usuário não foi encontrado' })
-    }
+    try {
+      const { nick, password } = req.body;
+      const checkUser = await User.findOne({ nickname: nick })
 
-    const isMatch = await bcrypt.compare(password, checkUser.password)
+      if (!checkUser) {
+        return res.status(400).json({ error: 'Ops! Usuário não foi encontrado' })
+      }
 
-    return !isMatch
-      ? res.status(401).json({ error: 'Ops! Nickname ou senha incorreto.' })
-      : res.status(201).json({
+      if (checkUser.status === "Pendente") {
+        return res.status(400).json({ error: 'Por favor crie sua conta no system.' })
+      }
+
+      const isMath = await bcrypt.compare(password, checkUser.password);
+      if (!isMath || checkUser.nickname !== nick) {
+        return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' })
+      }
+
+      res.status(201).json({
         _id: checkUser._id,
         nickname: checkUser.nickname,
         patent: checkUser.patent,
         classes: checkUser.classes,
+        teans: checkUser.teans,
         status: checkUser.status,
         userType: checkUser.userType,
         token: GenerateToken(checkUser._id)
       })
-  },
 
+    } catch (error) {
+      console.error("Erro ao efetuar o login.", error);
+      res.status(500).json({ msg: "Erro ao efetuar o login." });
+    }
+
+  },
 
   updateUser: async (req, res) => {
     try {
-        const userId = req.params.userId;
-        const { nick, password, securityCode } = req.body;
-        const updateUser = await User.findById(userId)
-        if (!updateUser) {
-            res.status(404).json({ msg: 'Usuário não encontrado.' });
-        }
+      const { nick, password, passwordConf, securityCode } = req.body;
+      const nickname = await User.findOne({ nickname: nick });
+      const motto = await connectHabbo(nickname.nickname);
 
-        const saltHash = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(password, saltHash);
+      if (!nickname) {
+        res.status(404).json({ msg: 'Usuário não encontrado.' });
+      };
 
+      if (passwordConf !== password) {
+        return res.status(422).json({ error: "Senha incorreta tente novamente." });
+      };
 
-        updateUser.user = user.toLowerCase();
-        updateUser.email = email.toLowerCase();
-        updateUser.password = passwordHash;
-        updateUser.userType = userType;
+      if (nickname.status !== 'Pendente') {
+        return res.status(422).json({ error: "Ops! Este usuário já se encontra ativo" });
+      };
 
+      if (motto.motto !== securityCode) {
+        return res.status(422).json({ error: "Ops! Seu código de acesso está errado, por favor verifique sua missão." });
+      };
 
-        await updateUser.save()
+      const saltHash = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(password, saltHash);
 
-        res.status(200).json({ msg: 'Usuário atualizado com sucesso' });
+      nickname.nickname = nickname.nickname;
+      nickname.patent = nickname.patent;
+      nickname.classes = nickname.classes;
+      nickname.teans = nickname.teans;
+      nickname.status = 'Ativo';
+      nickname.password = passwordHash;
+      nickname.userType = nickname.userType;
+
+      await nickname.save();
+      res.status(200).json({ msg: 'Usuário atualizado com sucesso' });
 
     } catch (error) {
-        console.error('Não foi possível atualizar o usuário.', error);
-        res.status(500).json({ msg: 'Não foi possível atualizar o usuário.' })
+      console.error('Não foi possível atualizar o usuário.', error);
+      res.status(500).json({ msg: 'Não foi possível atualizar o usuário.' })
     }
 
-},
-
-
-
-
+  },
 
   //Para deletar é necessário passar um parametro que é o ID do usuário que será deletado e o nick do usuário que irá deletar.
   // O código irá verificar se quem está deletando é admin e se quem será deletado existe no banco de dados.
   deleteUsers: async (req, res) => {
     try {
       const userId = req.params.userId;
-      const { nick } = req.body
-      const admin = await User.findOne({ nick });
-      const deleteUser = await User.findByIdAndDelete(userId)
-      
+      const { nick } = req.body;
+      const admin = await User.findOne({ nickname: nick });
+      const deleteUser = await User.findOne({_id: userId})
+
+
+      if (!deleteUser) {
+        return res.status(404).json({ msg: 'Usuário não encontrado' });
+      } 
       if (admin && admin.userType !== "Admin") {
         return res.status(404).json({ msg: 'Ops! Parece que você não é uma administrador.' });
-
-      } else if (!deleteUser) {
-        return res.status(404).json({ msg: 'Usuário não encontrado' });
-
-      } else {
+      } 
+      
+      if(admin && admin.userType === "Admin" && deleteUser){
+        await User.findByIdAndDelete(userId);
         return res.status(200).json({ msg: 'Usuário deletedo com sucesso' });
-
       }
-
+       
+      
 
     } catch (error) {
       console.error('Não foi possível deletar o usuário', error);
