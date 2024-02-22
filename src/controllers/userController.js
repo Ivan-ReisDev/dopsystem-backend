@@ -68,6 +68,7 @@ const serviceControllerUser = {
 
     try {
       const { nick, password } = req.body;
+      console.log(nick)
       const checkUser = await User.findOne({ nickname: nick })
 
       if (!checkUser) {
@@ -75,7 +76,7 @@ const serviceControllerUser = {
       }
 
       if (checkUser.status === "Pendente") {
-        return res.status(400).json({ error: 'Por favor crie sua conta no system.' })
+        return res.status(400).json({ error: 'Por favor ative sua conta no system.' })
       }
 
       const isMath = await bcrypt.compare(password, checkUser.password);
@@ -83,7 +84,7 @@ const serviceControllerUser = {
         return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' })
       }
 
-      res.status(201).json({
+     return res.status(201).json({
         _id: checkUser._id,
         nickname: checkUser.nickname,
         patent: checkUser.patent,
@@ -112,15 +113,15 @@ const serviceControllerUser = {
       };
 
       if (passwordConf !== password) {
-        return res.status(422).json({ error: "Senha incorreta tente novamente." });
+        return res.status(404).json({ msg: "Senha incorreta tente novamente." });
       };
 
       if (nickname.status !== 'Pendente') {
-        return res.status(422).json({ error: "Ops! Este usuário já se encontra ativo" });
+        return res.status(404).json({ msg: "Ops! Este usuário já se encontra ativo" });
       };
 
       if (motto.motto !== securityCode) {
-        return res.status(422).json({ error: "Ops! Seu código de acesso está errado, por favor verifique sua missão." });
+        return res.status(404).json({ msg: "Ops! Seu código de acesso está errado, por favor verifique sua missão." });
       };
 
       const saltHash = await bcrypt.genSalt(10);
@@ -166,8 +167,6 @@ const serviceControllerUser = {
         return res.status(200).json({ msg: 'Usuário deletedo com sucesso' });
       }
        
-      
-
     } catch (error) {
       console.error('Não foi possível deletar o usuário', error);
       res.status(500).json({ msg: 'Não foi possível deletar o usuário' })
@@ -176,20 +175,28 @@ const serviceControllerUser = {
   },
 
 
+  getcurrentUser: async (req, res) => {
+    try {
+        const user = req.user;
+        res.status(200).json(user);
+
+    } catch (error) {
+        console.log('Perfil não encontrado')
+    }
+
+},
 
   getAll: async (req, res) => {
     try {
-      const users = await connectHabbo()
-      console.log(users)
-      return res.json(users)
-
+        const users = await User.find();
+        res.json(users)
     } catch (error) {
 
-      console.error('Usuário não encontrado', error);
-      res.status(500).json({ msg: 'Usuário não encontrado' })
+        console.error('Usuário não encontrado', error);
+        res.status(500).json({ msg: 'Usuário não encontrado' })
     }
 
-  },
+},
 
 
 
