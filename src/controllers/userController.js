@@ -34,7 +34,7 @@ const serviceControllerUser = {
       const formdata = req.body;
       const { nick, patent, classes } = formdata;
       const passwordConf = "DOPsystem@@2024"
-      const nickname = await User.findOne({ nick });
+      const nickname = await User.findOne({ nickname: nick });
       if (nickname) {
         return res.status(422).json({ error: "Ops! Esse usuário já existe" });
       }
@@ -84,7 +84,7 @@ const serviceControllerUser = {
         return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' })
       }
 
-     return res.status(201).json({
+      return res.status(201).json({
         _id: checkUser._id,
         nickname: checkUser.nickname,
         patent: checkUser.patent,
@@ -104,39 +104,45 @@ const serviceControllerUser = {
 
   updateUser: async (req, res) => {
     try {
-      const { nick, password, passwordConf, securityCode } = req.body;
-      const nickname = await User.findOne({ nickname: nick });
-      const motto = await connectHabbo(nickname.nickname);
+      const { securityCode, formdata } = req.body;
+      const { newUserDopSystem, newPasswordDopSystem, newPasswordDopSystemConf } = formdata;
+      const nickname = await User.findOne({ nickname: newUserDopSystem });
 
       if (!nickname) {
-        res.status(404).json({ msg: 'Usuário não encontrado.' });
+        res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
+      } else {
+
+        const motto = await connectHabbo(nickname.nickname);
+
+        if (newPasswordDopSystemConf !== newPasswordDopSystem) {
+          return res.status(404).json({ msg: "Senha incorreta tente novamente." });
+        };
+
+        if (nickname.status !== 'Pendente') {
+          return res.status(404).json({ msg: "Ops! Este usuário já se encontra ativo" });
+        };
+
+        if (motto.motto !== securityCode) {
+          return res.status(404).json({ msg: "Ops! Seu código de acesso está errado, por favor verifique sua missão." });
+        };
+
+        const saltHash = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(newPasswordDopSystem, saltHash);
+
+        nickname.nickname = nickname.nickname;
+        nickname.patent = nickname.patent;
+        nickname.classes = nickname.classes;
+        nickname.teans = nickname.teans;
+        nickname.status = 'Ativo';
+        nickname.password = passwordHash;
+        nickname.userType = nickname.userType;
+
+        await nickname.save();
+        res.status(200).json({ msg: 'Usuário atualizado com sucesso' });
+
       };
 
-      if (passwordConf !== password) {
-        return res.status(404).json({ msg: "Senha incorreta tente novamente." });
-      };
 
-      if (nickname.status !== 'Pendente') {
-        return res.status(404).json({ msg: "Ops! Este usuário já se encontra ativo" });
-      };
-
-      if (motto.motto !== securityCode) {
-        return res.status(404).json({ msg: "Ops! Seu código de acesso está errado, por favor verifique sua missão." });
-      };
-
-      const saltHash = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(password, saltHash);
-
-      nickname.nickname = nickname.nickname;
-      nickname.patent = nickname.patent;
-      nickname.classes = nickname.classes;
-      nickname.teans = nickname.teans;
-      nickname.status = 'Ativo';
-      nickname.password = passwordHash;
-      nickname.userType = nickname.userType;
-
-      await nickname.save();
-      res.status(200).json({ msg: 'Usuário atualizado com sucesso' });
 
     } catch (error) {
       console.error('Não foi possível atualizar o usuário.', error);
@@ -152,21 +158,21 @@ const serviceControllerUser = {
       const userId = req.params.userId;
       const { nick } = req.body;
       const admin = await User.findOne({ nickname: nick });
-      const deleteUser = await User.findOne({_id: userId})
+      const deleteUser = await User.findOne({ _id: userId })
 
 
       if (!deleteUser) {
         return res.status(404).json({ msg: 'Usuário não encontrado' });
-      } 
+      }
       if (admin && admin.userType !== "Admin") {
         return res.status(404).json({ msg: 'Ops! Parece que você não é uma administrador.' });
-      } 
-      
-      if(admin && admin.userType === "Admin" && deleteUser){
+      }
+
+      if (admin && admin.userType === "Admin" && deleteUser) {
         await User.findByIdAndDelete(userId);
         return res.status(200).json({ msg: 'Usuário deletedo com sucesso' });
       }
-       
+
     } catch (error) {
       console.error('Não foi possível deletar o usuário', error);
       res.status(500).json({ msg: 'Não foi possível deletar o usuário' })
@@ -177,26 +183,26 @@ const serviceControllerUser = {
 
   getcurrentUser: async (req, res) => {
     try {
-        const user = req.user;
-        res.status(200).json(user);
+      const user = req.user;
+      res.status(200).json(user);
 
     } catch (error) {
-        console.log('Perfil não encontrado')
+      console.log('Perfil não encontrado')
     }
 
-},
+  },
 
   getAll: async (req, res) => {
     try {
-        const users = await User.find();
-        res.json(users)
+      const users = await User.find();
+      res.json(users)
     } catch (error) {
 
-        console.error('Usuário não encontrado', error);
-        res.status(500).json({ msg: 'Usuário não encontrado' })
+      console.error('Usuário não encontrado', error);
+      res.status(500).json({ msg: 'Usuário não encontrado' })
     }
 
-},
+  },
 
 
 
