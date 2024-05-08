@@ -72,16 +72,16 @@ const serviceControllerUser = {
       const checkUser = await User.findOne({ nickname: nick })
 
       if (!checkUser) {
-        return res.status(400).json({ error: 'Ops! Usuário não foi encontrado' })
+        return res.status(400).json({ errors: 'Ops! Usuário não foi encontrado' })
       }
 
       if (checkUser.status === "Pendente") {
-        return res.status(400).json({ error: 'Por favor ative sua conta no system.' })
+        return res.status(400).json({ errors: 'Por favor ative sua conta no system.' })
       }
 
       const isMath = await bcrypt.compare(password, checkUser.password);
       if (!isMath || checkUser.nickname !== nick) {
-        return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' })
+        return res.status(400).json({ errors: 'Ops! Nickname ou senha incorreto.' })
       }
 
       return res.status(201).json({
