@@ -72,18 +72,18 @@ const serviceControllerUser = {
       const checkUser = await User.findOne({ nickname: nick })
 
       if (!checkUser) {
-        return res.status(400).json({ errors: 'Ops! Usuário não foi encontrado' })
+        return res.status(400).json({ error: 'Ops! Usuário não foi encontrado' })
       }
 
       if (checkUser.status === "Pendente") {
-        return res.status(400).json({ errors: 'Por favor ative sua conta no system.' })
+        return res.status(400).json({ error: 'Por favor ative sua conta no system.' })
       }
 
       const isMath = await bcrypt.compare(password, checkUser.password);
       if (!isMath || checkUser.nickname !== nick) {
-        return res.status(400).json({ errors: 'Ops! Nickname ou senha incorreto.' })
+        return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' })
       }
-
+      console.log("Logado com sucesso")
       return res.status(201).json({
         _id: checkUser._id,
         nickname: checkUser.nickname,
@@ -200,6 +200,18 @@ const serviceControllerUser = {
 
       console.error('Usuário não encontrado', error);
       res.status(500).json({ msg: 'Usuário não encontrado' })
+    }
+
+  },
+
+  logoutPass: async (req, res) => {
+    try {
+      const user = req.user;
+      res.logout()
+      res.status(200).json(user);
+
+    } catch (error) {
+      console.log('Ocorreu um Erro.')
     }
 
   },

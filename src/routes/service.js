@@ -8,6 +8,7 @@ const serviceControllerTeams = require('../controllers/teamsController.js')
 
 router.route('/register').post((req, res) => serviceControllerUser.register(req, res))
 router.route('/login').post((req, res) => serviceControllerUser.login(req, res))
+router.route('/logout').get(authGuard, getcurrentUser, (req, res) => serviceControllerUser.logoutPass(req, res))
 router.route('/all/users').get((req, res) => serviceControllerUser.getAll(req, res))
 router.route('/user/delete/:userId').delete(authGuard, getcurrentUser,(req, res) => serviceControllerUser.deleteUsers(req, res))
 router.route('/users/update').put( (req, res) => serviceControllerUser.updateUser(req, res))

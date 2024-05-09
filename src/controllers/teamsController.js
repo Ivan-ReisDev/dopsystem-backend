@@ -65,7 +65,7 @@ const serviceControllerTeams = {
             const teamsId = req.params.teamsId;
             const { idUser, nameTeams, leader, viceLeader, members, classes } = req.body;
             const userAdmin = await User.findById(idUser)
-            const teamsUpdate = await Teams.findById(teamsId)
+            const teamsUpdate = await Teams.findById(teamsId);
 
             if (!teamsUpdate) {
                 return res.status(404).json({ msg: 'Ops! Equipe não encontrada.' });
