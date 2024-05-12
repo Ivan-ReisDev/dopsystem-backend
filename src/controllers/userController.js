@@ -201,7 +201,6 @@ const serviceControllerUser = {
       console.error('Usuário não encontrado', error);
       res.status(500).json({ msg: 'Usuário não encontrado' })
     }
-
   },
 
   logoutPass: async (req, res) => {
