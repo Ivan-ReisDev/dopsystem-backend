@@ -109,7 +109,7 @@ const serviceControllerRequirements = {
     getAllRequirements: async (req, res) => {
         try {
           const Requirement = await Requirements.find();
-          res.json(teams)
+          res.json(Requirement)
         } catch (error) {
     
           console.error('Usuário não encontrado', error);

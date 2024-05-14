@@ -1,6 +1,7 @@
 const { User } = require("../Models/useModel.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { Logger } = require('../Models/logsModel')
 
 // Função para gerar um token JWT com base no ID do usuário
 const apiHabbo = `https://www.habbo.com.br/api/public/users?name=`
@@ -65,7 +66,6 @@ const serviceControllerUser = {
 
   // função para efetuar o login.
   login: async (req, res) => {
-    
     try {
       const { nick, password } = req.body;
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -86,6 +86,15 @@ const serviceControllerUser = {
       }
       
       console.log(ipAddress)
+
+      const newLogger = {
+        user: checkUser.nickname,
+        ip: ipAddress,
+        loggerType: "Efetuou o login no system"
+      }
+      
+       await Logger.create(newLogger);
+
       return res.status(201).json({
         _id: checkUser._id,
         nickname: checkUser.nickname,
