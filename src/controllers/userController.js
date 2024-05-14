@@ -203,6 +203,24 @@ const serviceControllerUser = {
     }
   },
 
+
+  searchUser: async (req, res) => {
+    try {
+        const  nickname  = req.query.nickname;
+        console.log(nickname)
+        const users = await User.find().sort({ nickname: 1 });
+        const resUser = nickname
+            ? users.filter(user => user.nickname.includes(nickname)) 
+            : users;
+        return res.json(resUser);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+},
+
+
+
   logoutPass: async (req, res) => {
     try {
       const user = req.user;

@@ -59,6 +59,19 @@ const serviceControllerTeams = {
         }
     },
 
+    getAllTeams: async (req, res) => {
+        try {
+          const teams = await Teams.find();
+          res.json(teams)
+        } catch (error) {
+    
+          console.error('Usuário não encontrado', error);
+          res.status(500).json({ msg: 'Usuário não encontrado' })
+        }
+      },
+
+      
+
     //Função para atualizar a equipe
     updateTeams: async (req, res) => {
         try {

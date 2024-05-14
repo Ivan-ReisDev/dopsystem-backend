@@ -17,7 +17,20 @@ const DocsSystemSchema = new mongoose.Schema({
         require: true
     },
 
-})
+    docsType: {
+        type: String,
+        require: true
+    },
+
+    status: {
+        type: String,
+        enum: ["Ativo", "Desativado"],
+        required: true,
+    },
+
+
+
+},{ timestamps: true })
 
 
 const DocsSystem = mongoose.model('Docs', DocsSystemSchema);

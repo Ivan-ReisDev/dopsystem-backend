@@ -6,20 +6,22 @@ const serviceControllerDocs = {
     //Função responsável por criar a equioe
     createDocs: async (req, res) => {
         try {
-            const { idUser, nameDocs, content } = req.body;
+            const { idUser, nameDocs, content, docsType } = req.body;
             const nickname = await User.findOne({ idUser: idUser });
             if (nickname && nickname.userType !== "Admin") {
                 return res.status(422).json({ error: 'Ops! Você não é um administrador.' })
             }     
 
-            if (!nameDocs || !content) {
+            if (!nameDocs || !content || content === "<p><br></p>" || !docsType) {
                 return res.status(422).json({ error: 'Preencha todos os campos' })
             }
 
             const newDoc = {
                 nameDocs: nameDocs,
                 content: content,
-                create: nickname.nickname
+                create: nickname.nickname,
+                docsType: docsType,
+                status: "Ativo"
             }
 
             const createDocs = await DocsSystem.create(newDoc);
@@ -32,7 +34,7 @@ const serviceControllerDocs = {
 
         } catch (error) {
             console.error('Erro ao registrar', error);
-            res.status(500).json({ msg: 'Erro ao documento.' })
+            res.status(500).json({ msg: 'Erro ao criar documento documento.' })
         }
     },
 
