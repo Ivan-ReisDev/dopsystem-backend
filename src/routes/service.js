@@ -8,6 +8,7 @@ const serviceControllerTeams = require('../controllers/teamsController.js');
 const serviceControllerDocs = require('../controllers/DocsController.js')
 const serviceControllerRequirements = require('../controllers/Requirements.js')
 const serviceControllerSystem = require('../controllers/systemController.js');
+const serviceControllerLogger = require('../controllers/logsController.js');
 
 
 router.route('/register').post((req, res) => serviceControllerUser.register(req, res))
@@ -17,6 +18,7 @@ router.route('/all/users').get((req, res) => serviceControllerUser.getAll(req, r
 router.route('/user/delete/:userId').delete(authGuard, getcurrentUser,(req, res) => serviceControllerUser.deleteUsers(req, res))
 router.route('/users/update').put( (req, res) => serviceControllerUser.updateUser(req, res))
 router.route('/profile').get(authGuard, getcurrentUser, (req, res) => serviceControllerUser.getAll(req, res));
+router.route('/profile/pages').get(authGuard,(req, res) => serviceControllerUser.getAll(req, res));
 router.route('/search').get((req, res) => serviceControllerUser.searchUser(req, res))
 
 router.route('/teams/create').post((req, res) => serviceControllerTeams.createTeams(req, res));
@@ -36,5 +38,9 @@ router.route('/create/info').post((req, res) => serviceControllerSystem.createIn
 router.route('/post/requirement/promoted').post((req, res) => serviceControllerRequirements.createRequirements(req, res));
 router.route('/search/requeriments').get((req, res) => serviceControllerRequirements.searchRequeriments(req, res))
 router.route('/post/requirement/relegation').post((req, res) => serviceControllerRequirements.createRequirementsRelegation(req, res));
+
+
+//Loguer 
+router.route('/loggers').get(authGuard,(req, res) => serviceControllerLogger.getAllLogs(req, res))
 
 module.exports = router

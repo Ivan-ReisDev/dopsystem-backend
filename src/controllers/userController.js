@@ -206,7 +206,9 @@ const serviceControllerUser = {
 
   getAll: async (req, res) => {
     try {
+      const $nickname = req.query.nickname
       const users = await User.find();
+
       res.json(users)
     } catch (error) {
 
@@ -215,6 +217,21 @@ const serviceControllerUser = {
     }
   },
 
+  getAllNicks: async (req, res) => {
+    try {
+      const users = await User.find();
+      console.log(users);
+      
+      // Mapeia a lista de usuários para extrair apenas os apelidos
+      const nicknames = users.map(user => user.nickname);
+      
+      return res.json(nicknames);
+      
+    } catch (error) {
+      console.error('Erro ao buscar usuários:', error);
+      return res.status(500).json({ msg: 'Erro ao buscar usuários' });
+    }
+  },
 
   searchUser: async (req, res) => {
     try {
