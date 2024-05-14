@@ -65,9 +65,10 @@ const serviceControllerUser = {
 
   // função para efetuar o login.
   login: async (req, res) => {
-
+    
     try {
       const { nick, password } = req.body;
+      const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
       console.log(nick)
       const checkUser = await User.findOne({ nickname: nick })
 
@@ -83,7 +84,8 @@ const serviceControllerUser = {
       if (!isMath || checkUser.nickname !== nick) {
         return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' })
       }
-      console.log("Logado com sucesso")
+      
+      console.log(ipAddress)
       return res.status(201).json({
         _id: checkUser._id,
         nickname: checkUser.nickname,
@@ -92,7 +94,8 @@ const serviceControllerUser = {
         teans: checkUser.teans,
         status: checkUser.status,
         userType: checkUser.userType,
-        token: GenerateToken(checkUser._id)
+        token: GenerateToken(checkUser._id),
+        ip: ipAddress
       })
 
     } catch (error) {
