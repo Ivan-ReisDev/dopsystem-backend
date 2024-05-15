@@ -1,13 +1,15 @@
 const { Teams } = require("../Models/teamsModel");
 const { User } = require("../Models/useModel");
+const { Logger } = require('../Models/logsModel')
 
 const serviceControllerTeams = {
     //Função responsável por criar a equioe
     createTeams: async (req, res) => {
         try {
+            const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
             const { idUser, nameTeams, teamsType, leader, viceLeader, members, classes } = req.body;
             const nameTeam = await Teams.findOne({ nameTeams: nameTeams });
-            const nickname = await User.findOne({ idUser: idUser });
+            const nickname = await User.findOne({ _id: idUser });
 
             if (nickname && nickname.userType !== "Admin") {
                 return res.status(422).json({ error: 'Ops! Você não é um administrador.' })
@@ -22,13 +24,21 @@ const serviceControllerTeams = {
             }
 
             const newTeams = {
-                nameTeams: nameTeams.toLowerCase(0),
+                nameTeams: nameTeams,
                 teamsType: teamsType,
                 leader: leader,
                 viceLeader: viceLeader,
                 members: members,
                 classes: classes
             }
+
+            const newLogger = {
+                user: nickname.nickname,
+                ip: ipAddress,
+                loggerType: `Uma nova equipe foi criada com o nome: ${nameDocs}`
+              }
+              
+            await Logger.create(newLogger);
 
             const createTeams = await Teams.create(newTeams)
 

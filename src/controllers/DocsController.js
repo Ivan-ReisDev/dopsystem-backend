@@ -1,11 +1,13 @@
 const { Teams } = require("../Models/teamsModel");
 const { User } = require("../Models/useModel");
 const { DocsSystem } = require("../Models/docsModel");
+const { Logger } = require('../Models/logsModel')
 
 const serviceControllerDocs = {
     //Função responsável por criar a equioe
     createDocs: async (req, res) => {
         try {
+            const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
             const { idUser, nameDocs, content, docsType } = req.body;
             const nickname = await User.findOne({ _id: idUser });
             console.log(nickname)
@@ -25,6 +27,14 @@ const serviceControllerDocs = {
                 status: "Ativo"
             }
 
+            const newLogger = {
+                user: nickname.nickname,
+                ip: ipAddress,
+                loggerType: `Um novo documento foi criado com o nome: ${nameDocs}`
+              }
+              
+            await Logger.create(newLogger);
+              
             const createDocs = await DocsSystem.create(newDoc);
 
             if (!createDocs) {
