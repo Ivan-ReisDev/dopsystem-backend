@@ -7,7 +7,8 @@ const serviceControllerDocs = {
     createDocs: async (req, res) => {
         try {
             const { idUser, nameDocs, content, docsType } = req.body;
-            const nickname = await User.findOne({ idUser: idUser });
+            const nickname = await User.findOne({ _id: idUser });
+            console.log(nickname)
             if (nickname && nickname.userType !== "Admin") {
                 return res.status(422).json({ error: 'Ops! Você não é um administrador.' })
             }     
