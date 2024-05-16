@@ -2,6 +2,8 @@ const { User } = require("../Models/useModel.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { Logger } = require('../Models/logsModel')
+const { InfoSystem } = require('../Models/systemModel.js')
+
 
 // Função para gerar um token JWT com base no ID do usuário
 const apiHabbo = `https://www.habbo.com.br/api/public/users?name=`
@@ -14,6 +16,8 @@ const GenerateToken = (id) => {
     }
   );
 };
+
+
 
 //Conecta com a API do habbo
 const connectHabbo = async (nick) => {
@@ -29,6 +33,8 @@ const connectHabbo = async (nick) => {
 };
 
 const serviceControllerUser = {
+
+
   register: async (req, res) => {
 
     try {
@@ -51,6 +57,8 @@ const serviceControllerUser = {
         status: 'Pendente',
         password: passwordHash,
         userType: 'User',
+        warnings: "0",
+        medals: "0"
       };
 
       const createUser = await User.create(newUser);
@@ -84,7 +92,7 @@ const serviceControllerUser = {
       if (!isMath || checkUser.nickname !== nick) {
         return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' })
       }
-      
+
       console.log(ipAddress)
 
       const newLogger = {
@@ -92,8 +100,8 @@ const serviceControllerUser = {
         ip: ipAddress,
         loggerType: "Efetuou o login no system"
       }
-      
-       await Logger.create(newLogger);
+
+      await Logger.create(newLogger);
 
       return res.status(201).json({
         _id: checkUser._id,
@@ -221,12 +229,12 @@ const serviceControllerUser = {
     try {
       const users = await User.find();
       console.log(users);
-      
+
       // Mapeia a lista de usuários para extrair apenas os apelidos
       const nicknames = users.map(user => user.nickname);
-      
+
       return res.json(nicknames);
-      
+
     } catch (error) {
       console.error('Erro ao buscar usuários:', error);
       return res.status(500).json({ msg: 'Erro ao buscar usuários' });
@@ -235,18 +243,39 @@ const serviceControllerUser = {
 
   searchUser: async (req, res) => {
     try {
-        const  nickname  = req.query.nickname;
-        console.log(nickname)
-        const users = await User.find().sort({ nickname: 1 });
-        const resUser = nickname
-            ? users.filter(user => user.nickname.includes(nickname)) 
-            : users;
-        return res.json(resUser);
-    } catch (error) {
-        console.log(error);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
+      const nickname = req.query.nickname;
+      const typeRequeriment = req.query.typeRequeriment;
+      const users = await User.find().sort({ nickname: 1 });
+      const resUser = nickname
+          ? users.filter(user => user.nickname.includes(nickname))
+          : users;
+      const info = await InfoSystem.findOne();
+      if (!info || !info.patents || !info.paidPositions) {
+          return res.status(500).json({ msg: 'Informações do sistema não encontradas.' });
+      }
+  
+      const newPatents = resUser.map(user => {
+          const patentRelegationIndex = info.patents.includes(user.patent)
+              ? info.patents.indexOf(user.patent)
+              : info.paidPositions.indexOf(user.patent);
+        if( typeRequeriment === "Promoção") {
+          const indexRealOperator = patentRelegationIndex + 1;
+          return info.patents[indexRealOperator];
+        }
+
+        if(typeRequeriment === "Rebaixamento") {
+          const indexRealOperator = patentRelegationIndex - 1;
+          return info.patents[indexRealOperator];
+        }
+
+      });
+  
+      return res.json({ users: resUser, newPatents: newPatents });
+  } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
     }
-},
+  },
 
 
 

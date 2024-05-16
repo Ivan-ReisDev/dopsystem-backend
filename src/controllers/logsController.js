@@ -5,6 +5,7 @@ const { User } = require('../Models/useModel');
 const serviceControllerLogger = {
     //Função responsável por criar a equioe
     getAllLogs: async (req, res) => {
+      
         try {
           const $nickname =  req.query.nickname
           const admin = await User.findOne({ nickname: $nickname });

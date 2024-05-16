@@ -11,6 +11,11 @@ const requirementsSchema = new mongoose.Schema({
         required: true
     },
 
+    patentOperador : {
+        type: String,
+        required: true
+    },
+
     operator: {
         type: String,
         required: true
@@ -28,7 +33,7 @@ const requirementsSchema = new mongoose.Schema({
 
     status: {
         type: String,
-        enum: ["Pendente", "Ativo" ,"Reprovado" ],
+        enum: ["Pendente", "Aprovado" ,"Reprovado" ],
         required: true
     },
 

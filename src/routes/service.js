@@ -38,7 +38,8 @@ router.route('/create/info').post((req, res) => serviceControllerSystem.createIn
 router.route('/post/requirement/promoted').post((req, res) => serviceControllerRequirements.createRequirements(req, res));
 router.route('/search/requeriments').get((req, res) => serviceControllerRequirements.searchRequeriments(req, res))
 router.route('/post/requirement/relegation').post((req, res) => serviceControllerRequirements.createRequirementsRelegation(req, res));
-
+router.route('/post/requirement/warning').post((req, res) => serviceControllerRequirements.createRequirementsWarning(req, res));
+router.route('/search/requeriments/promoteds').get((req, res) => serviceControllerRequirements.getAllRequirementsPromoteds(req, res))
 
 //Loguer 
 router.route('/loggers').get(authGuard,(req, res) => serviceControllerLogger.getAllLogs(req, res))

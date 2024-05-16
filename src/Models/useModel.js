@@ -31,7 +31,17 @@ const userSchema = new mongoose.Schema({
         enum: ["Pendente", "Ativo", "Desativado", "Exonerado", "Banido", "Reformado"],
         required: true
     },
-    
+
+    warnings: {
+        type: String,
+        required: true
+    },
+
+    medals: {
+        type: String,
+        required: true
+    },
+
     userType: {
         type: String,
         enum: ["User", "Admin"],
