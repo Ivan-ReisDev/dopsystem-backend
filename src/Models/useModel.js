@@ -32,6 +32,11 @@ const userSchema = new mongoose.Schema({
         required: true
     },
 
+    tag: {
+        type: String,
+        required: true
+    },
+    
     warnings: {
         type: String,
         required: true

@@ -88,6 +88,10 @@ const serviceControllerUser = {
         return res.status(400).json({ error: 'Por favor ative sua conta no system.' })
       }
 
+      if (checkUser.status === "Desativado") {
+        return res.status(400).json({ error: 'Ops! Parece que sua conta encontra-se desativada.' })
+      }
+
       const isMath = await bcrypt.compare(password, checkUser.password);
       if (!isMath || checkUser.nickname !== nick) {
         return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' })
