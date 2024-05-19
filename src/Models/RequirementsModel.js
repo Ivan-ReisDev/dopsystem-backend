@@ -23,6 +23,11 @@ const requirementsSchema = new mongoose.Schema({
 
     reason: {
         type: String,
+        required: false
+    },
+
+    reason: {
+        type: String,
         required: true
     },
 

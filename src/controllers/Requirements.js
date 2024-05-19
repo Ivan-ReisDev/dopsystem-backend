@@ -323,6 +323,69 @@ const serviceControllerRequirements = {
       },
 
 
+      createSales: async (req, res) => {
+        try {
+            const { idUser, promoted, patent, reason, price } = req.body;
+            const nicknameOperator = await User.findOne({ _id: idUser });
+            const nicknameRelegation = await User.findOne({ nickname: promoted });
+            const info = await InfoSystem.findOne();
+            const passwordConf = "DOPsystem@@2024"
+  
+            if (nicknameRelegation) {
+              return res.status(422).json({ error: "Ops! Esse usuário já existe" });
+            }
+
+            if (!info || !info.patents || !info.paidPositions) {
+                return res.status(500).json({ msg: 'Informações do sistema não encontradas.' });
+            }
+
+            if (nicknameOperator.userType === "Admin"  || nicknameOperator.userType === "Diretoria") {
+                const newRequirement = {
+                    promoted,
+                    newPatent: patent,
+                    reason,
+                    patentOperador: nicknameOperator.patent,
+                    operator: nicknameOperator.nickname,
+                    price,
+                    typeRequirement: "Venda",
+                    status: "Pendente"
+                };
+    
+              const saltHash = await bcrypt.genSalt(10);
+              const passwordHash = await bcrypt.hash(passwordConf, saltHash);
+        
+              const newUser = {
+                nickname: promoted,
+                patent: patent,
+                classes: "",
+                teans: '',
+                status: 'Pendente',
+                tag: 'Vazio',
+                warnings: "0",
+                medals: "0",
+                password: passwordHash,
+                userType: 'User'
+              };
+    
+              await Requirements.create(newRequirement);
+              const createUser = await User.create(newUser);
+              return !createUser
+                ? res.status(422).json({ error: "Houve um erro, tente novamente mais tarde" })
+                : res.status(201).json({ msg: "Venda efetuada com sucesso." });
+                
+            }
+            return res.status(422).json({ error: 'Ops! Você não tem permissão para vender cargo ' });
+            
+    
+        } catch (error) {
+          console.error("Erro ao registrar", error);
+          res.status(500).json({ msg: "Erro ao efetuar cadastro" });
+        }
+      },
+
+
+
+
     getAllRequirementsPromoteds: async (req, res) => {
         try {
             const statusRequirement = req.query.statusRequirement;

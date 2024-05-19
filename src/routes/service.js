@@ -41,6 +41,7 @@ router.route('/post/requirement/relegation').post((req, res) => serviceControlle
 router.route('/post/requirement/warning').post((req, res) => serviceControllerRequirements.createRequirementsWarning(req, res));
 router.route('/post/requirement/resignation').post((req, res) => serviceControllerRequirements.createRequirementsResignation(req, res));
 router.route('/post/requeriments/contract').post((req, res) => serviceControllerRequirements.createContract(req, res))
+router.route('/post/requeriments/sales').post((req, res) => serviceControllerRequirements.createSales(req, res))
 router.route('/put/requirement/resignation').put( (req, res) => serviceControllerRequirements.ResignationUpdateUser(req, res))
 router.route('/search/requeriments/promoteds').get((req, res) => serviceControllerRequirements.getAllRequirementsPromoteds(req, res))
 
