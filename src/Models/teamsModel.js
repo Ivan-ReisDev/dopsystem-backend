@@ -33,7 +33,7 @@ const teamsSchema = new mongoose.Schema({
         
     },
 
-})
+},{ timestamps: true })
 
 
 const Teams = mongoose.model('Teams', teamsSchema);

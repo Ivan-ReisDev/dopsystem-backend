@@ -25,11 +25,15 @@ router.route('/teams/create').post((req, res) => serviceControllerTeams.createTe
 router.route('/teams/update/:teamsId').put((req, res) => serviceControllerTeams.updateTeams(req, res))
 router.route('/searchTeams').get((req, res) => serviceControllerTeams.searchTeams(req, res))
 router.route('/teams/all').get((req, res) => serviceControllerTeams.getAllTeams(req, res))
-router.route('/teams/delete/:teamsId').delete((req, res) => serviceControllerTeams.deleteTeams(req, res))
+router.route('/teams/delete').delete((req, res) => serviceControllerTeams.deleteTeams(req, res))
+router.route('/teams/info').get((req, res) => serviceControllerTeams.returnInfoTeams(req, res));
+router.route('/teams/add').put( (req, res) => serviceControllerTeams.addUserTeams(req, res))
+router.route('/teams/remove').put( (req, res) => serviceControllerTeams.RemoveUserTeams(req, res))
 
 router.route('/create/docs').post((req, res) => serviceControllerDocs.createDocs(req, res));
 router.route('/all/docs').get((req, res) => serviceControllerDocs.getAllDocs(req, res))
-
+router.route('/update/docs').put((req, res) => serviceControllerDocs.updateDocs(req, res))
+router.route('/delete/docs').delete((req, res) => serviceControllerDocs.deleteDocs(req, res))
 
 
 router.route('/all/info').get((req, res) => serviceControllerSystem.getInfoSystem(req, res))
@@ -47,5 +51,7 @@ router.route('/search/requeriments/promoteds').get((req, res) => serviceControll
 
 //Loguer 
 router.route('/loggers').get(authGuard,(req, res) => serviceControllerLogger.getAllLogs(req, res))
+
+
 
 module.exports = router

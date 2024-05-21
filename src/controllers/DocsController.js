@@ -2,6 +2,19 @@ const { Teams } = require("../Models/teamsModel");
 const { User } = require("../Models/useModel");
 const { DocsSystem } = require("../Models/docsModel");
 const { Logger } = require('../Models/logsModel')
+const mongoose = require('mongoose');
+
+const createLogger = async (action, user,  name, ip) => {
+    const newLogger = {
+        user: user,
+        ip: ip,
+        loggerType: `${action} ${name}`
+      }
+
+      await Logger.create(newLogger);
+
+}
+
 
 const serviceControllerDocs = {
     //Função responsável por criar a equioe
@@ -79,61 +92,70 @@ const serviceControllerDocs = {
     },
 
     //Função para atualizar a equipe
-    updateTeams: async (req, res) => {
+    updateDocs: async (req, res) => {
         try {
-            const teamsId = req.params.teamsId;
-            const { idUser, nameTeams, leader, viceLeader, members, classes } = req.body;
-            const userAdmin = await User.findById(idUser)
-            const teamsUpdate = await Teams.findById(teamsId);
-
-            if (!teamsUpdate) {
-                return res.status(404).json({ msg: 'Ops! Equipe não encontrada.' });
+            const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+            const { idUser, nameDocs, content, docsType, idDoc } = req.body;
+            console.log(`docId: ${idDoc}, idUser: ${idUser}, nameDocs: ${nameDocs}, content: ${content}, docsType: ${docsType}`);
+    
+            // Validação do ID do documento
+            if (!mongoose.Types.ObjectId.isValid(idDoc)) {
+                return res.status(400).json({ msg: 'ID do documento inválido.' });
             }
-
-            if (userAdmin  && userAdmin.userType !== 'Admin') {
-                return res.status(404).json({ msg: 'Ops! Parece que você não é uma administrador.' });
+    
+            const userAdmin = await User.findById(idUser);
+            const docUpdate = await DocsSystem.findById(idDoc);
+    
+            if (!docUpdate) {
+                console.log('Ops! Documento não encontrado.');
+                return res.status(404).json({ msg: 'Ops! Documento não encontrado.' });
             }
-
-            teamsUpdate.nameTeams = nameTeams !== ""? nameTeams : teamsUpdate.nameTeams;
-            teamsUpdate.teamsType = teamsUpdate.teamsType;
-            teamsUpdate.leader = leader !== "" ? leader : teamsUpdate.leader;
-            teamsUpdate.viceLeader = viceLeader !== "" ? viceLeader : teamsUpdate.viceLeader;
-            teamsUpdate.members = members !== ""? [...teamsUpdate.members, members] : teamsUpdate.members;
-            teamsUpdate.classes = classes !== ""? [...teamsUpdate.classes, classes ] : teamsUpdate.classes;
-            
-            await teamsUpdate.save()
-            res.status(200).json({ msg: 'Equipe atualizada com sucesso!' });
-
+    
+            if (userAdmin && userAdmin.userType !== 'Admin') {
+                return res.status(403).json({ msg: 'Ops! Parece que você não é um administrador.' });
+            }
+    
+            docUpdate.nameDocs = nameDocs ? nameDocs : docUpdate.nameDocs;
+            docUpdate.content = content ? content : docUpdate.content;
+            docUpdate.docsType = docsType ? docsType : docUpdate.docsType;
+    
+            await docUpdate.save();
+            createLogger("Editou o documento", userAdmin.nickname, docUpdate.nameDocs, ipAddress)
+            res.status(200).json({ msg: 'Documento atualizado com sucesso!' });
+    
         } catch (error) {
-            console.error('Ops! Não foi possível atualizar a equipe ou órgão.', error);
-            res.status(500).json({ msg: 'Ops! Não foi possível atualizar a equipe ou órgão.' })
+            console.error('Ops! Não foi possível atualizar o documento.', error);
+            res.status(500).json({ msg: 'Ops! Não foi possível atualizar o documento.' });
         }
-
     },
-
+    
     //Função responsável por deletar uma equipe de acordo com o id params dela.
-    deleteTeams: async (req, res) => {
+    deleteDocs: async (req, res) => {
         try {
-            const teamsId = req.params.teamsId;
-            const { nick } = req.body;
-            const admin = await User.findOne({ nickname: nick })
-            const deleteTeam = await Teams.findById(teamsId)
+            const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+            const { idUser, idDoc, idTeam } = req.body;
+            const admin = await User.findById(idUser)
+            const TeamSelect = await Teams.findById(idTeam)
+            const deleteDoc = await DocsSystem.findById(idDoc)
 
-            if (!deleteTeam) {
-                return res.status(404).json({ msg: 'Ops! Equipe ou órgão não encontrado' });
+            if (!deleteDoc) {
+                return res.status(404).json({ msg: 'Ops! Documento não encontrado' });
             }
-            if (admin && admin.userType !== "Admin") {
-                return res.status(404).json({ msg: 'Ops! Parece que você não é uma administrador.' });
+        
+            if (admin && admin.userType === "Admin" || TeamSelect.leader === admin.nickname) {
+                await DocsSystem.findByIdAndDelete(deleteDoc._id);
+                createLogger("Deletou o documento", admin.nickname, deleteDoc.nameDocs, ipAddress)
+                return res.status(200).json({ msg: 'Documento deletedo com sucesso' });
+                
+            } else {
+                return res.status(404).json({ msg: 'Ops! Parece que você não é um administrador.' });
             }
 
-            if (admin && admin.userType === "Admin" && deleteTeam) {
-                await Teams.findByIdAndDelete(teamsId);
-                return res.status(200).json({ msg: 'Usuário deletedo com sucesso' });
-            }
-
+            
+        
         } catch (error) {
-            console.error('Não foi possível deletar o usuário', error);
-            res.status(500).json({ msg: 'Não foi possível deletar o usuário' })
+            console.error('Não foi possível deletar o documento.', error);
+            res.status(500).json({ msg: 'Não foi possível deletar o documento.' })
         }
     },
 
