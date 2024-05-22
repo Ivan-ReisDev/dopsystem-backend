@@ -45,7 +45,6 @@ const serviceControllerTeams = {
           if (typeRequirement) {
             newArrayRequirements = requeriments.filter(objeto => objeto.typeRequirement === typeRequirement);
             const teams = await Teams.find({ nameTeams: nameTeams });
-            
             const newResponse = teams[0].members.map(user => {
               const filteredRequirements = newArrayRequirements.filter(requirement => requirement.operator === user.nickname);
               
@@ -54,7 +53,7 @@ const serviceControllerTeams = {
                 requirements: filteredRequirements
               };
             });
-      
+       
             return res.json(newResponse);
           }
       
