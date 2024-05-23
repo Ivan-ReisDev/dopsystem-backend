@@ -7,12 +7,6 @@ const teamsSchema = new mongoose.Schema({
         require: true
     },
 
-    teamsType: {
-        type: String,
-        enum: ["Equipe", "Órgão"],
-        required: true,
-    },
-
     leader: {
         type: String,
         required: true
@@ -25,13 +19,10 @@ const teamsSchema = new mongoose.Schema({
 
     members: {
         type: Array,
-        required: true
+        required: false
     },
 
-    classes: {
-        type: Array,
-        
-    },
+
 
 },{ timestamps: true })
 

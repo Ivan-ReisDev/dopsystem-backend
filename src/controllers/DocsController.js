@@ -141,8 +141,13 @@ const serviceControllerDocs = {
             if (!deleteDoc) {
                 return res.status(404).json({ msg: 'Ops! Documento não encontrado' });
             }
-        
-            if (admin && admin.userType === "Admin" || TeamSelect.leader === admin.nickname) {
+
+            if (admin && admin.userType === "Admin" ) {
+                await DocsSystem.findByIdAndDelete(deleteDoc._id);
+                createLogger("Deletou o documento", admin.nickname, deleteDoc.nameDocs, ipAddress)
+                return res.status(200).json({ msg: 'Documento deletedo com sucesso' });
+
+            }  else if (TeamSelect.leader === admin.nickname) {
                 await DocsSystem.findByIdAndDelete(deleteDoc._id);
                 createLogger("Deletou o documento", admin.nickname, deleteDoc.nameDocs, ipAddress)
                 return res.status(200).json({ msg: 'Documento deletedo com sucesso' });

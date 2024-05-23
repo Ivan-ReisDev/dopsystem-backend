@@ -8,7 +8,7 @@ async function main(){
         // const dbPassword = process.env.DB_PASS
 
          mongoose.set("strictQuery", true)
-        await mongoose.connect(`mongodb+srv://ivanreisdev:8AMWuIPOYh1REJ9h@cluster0.dvmxyl9.mongodb.net/?retryWrites=true&w=majority`);
+        await mongoose.connect(process.env.DB_CONNECT);
         console.log("Banco Conectado", mongoose.connection.host);
     } catch (error) {
         console.log(`error: ${error}`);

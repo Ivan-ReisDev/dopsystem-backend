@@ -218,16 +218,15 @@ const serviceControllerUser = {
 
   getAll: async (req, res) => {
     try {
-      const $nickname = req.query.nickname
-      const users = await User.find();
-
-      res.json(users)
+        // Consulta para obter todos os usuários, excluindo a senha
+        const users = await User.find().select("-password");
+        // Envia os usuários sem a senha como resposta
+        res.json(users);
     } catch (error) {
-
-      console.error('Usuário não encontrado', error);
-      res.status(500).json({ msg: 'Usuário não encontrado' })
+        console.error('Usuário não encontrado', error);
+        res.status(500).json({ msg: 'Usuário não encontrado' });
     }
-  },
+},
 
   getAllNicks: async (req, res) => {
     try {

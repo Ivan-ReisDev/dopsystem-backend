@@ -214,7 +214,7 @@ const serviceControllerTeams = {
     createTeams: async (req, res) => {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-            const { idUser, nameTeams, teamsType, leader, viceLeader, members, classes } = req.body;
+            const { idUser, nameTeams, leader, viceLeader } = req.body;
             const nameTeam = await Teams.findOne({ nameTeams: nameTeams });
             const nickname = await User.findOne({ _id: idUser });
 
@@ -226,17 +226,21 @@ const serviceControllerTeams = {
                 return res.status(422).json({ error: 'Ops! Essa equipe já existe.' })
             }
 
-            if (!nameTeams || !teamsType || !leader || !leader || !viceLeader || !members || !classes) {
+            if (!nameTeams || !leader || !leader || !viceLeader ) {
                 return res.status(422).json({ error: 'Preencha todos os campos' })
+            }
+
+
+            const members = {
+                nickname: leader,
+                office: "Líder"
             }
 
             const newTeams = {
                 nameTeams: nameTeams,
-                teamsType: teamsType,
                 leader: leader,
                 viceLeader: viceLeader,
                 members: members,
-                classes: classes
             }
 
             const newLogger = {
@@ -292,8 +296,7 @@ const serviceControllerTeams = {
     //Função para atualizar a equipe
     updateTeams: async (req, res) => {
         try {
-            const teamsId = req.params.teamsId;
-            const { idUser, nameTeams, leader, viceLeader, members, classes } = req.body;
+            const { idUser, teamsId,  nameTeams, leader, viceLeader, members } = req.body;
             const userAdmin = await User.findById(idUser)
             const teamsUpdate = await Teams.findById(teamsId);
 
@@ -309,8 +312,7 @@ const serviceControllerTeams = {
             teamsUpdate.teamsType = teamsUpdate.teamsType;
             teamsUpdate.leader = leader !== "" ? leader : teamsUpdate.leader;
             teamsUpdate.viceLeader = viceLeader !== "" ? viceLeader : teamsUpdate.viceLeader;
-            teamsUpdate.members = members !== ""? [...teamsUpdate.members, members] : teamsUpdate.members;
-            teamsUpdate.classes = classes !== ""? [...teamsUpdate.classes, classes ] : teamsUpdate.classes;
+            
             
             await teamsUpdate.save()
             res.status(200).json({ msg: 'Equipe atualizada com sucesso!' });
