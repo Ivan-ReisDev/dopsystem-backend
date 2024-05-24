@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
     },
     
     warnings: {
-        type: String,
+        type: Number,
         required: true
     },
 

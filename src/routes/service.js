@@ -10,7 +10,7 @@ const serviceControllerRequirements = require('../controllers/Requirements.js')
 const serviceControllerSystem = require('../controllers/systemController.js');
 const serviceControllerLogger = require('../controllers/logsController.js');
 const serviceControllerClasse = require('../controllers/ClassesController.js')
-
+const serviceControllerRh = require("../controllers/RhController.js")
 router.route('/register').post((req, res) => serviceControllerUser.register(req, res))
 router.route('/login').post((req, res) => serviceControllerUser.login(req, res))
 router.route('/logout').get(authGuard, getcurrentUser, (req, res) => serviceControllerUser.logoutPass(req, res))
@@ -52,8 +52,13 @@ router.route('/search/requeriments/promoteds').get((req, res) => serviceControll
 
 //classes 
 router.route('/create/classe').post((req, res) => serviceControllerClasse.createClasse(req, res));
+router.route('/create/classe/requirement').post((req, res) => serviceControllerClasse.postClasse(req, res));
 router.route('/update/classe').put((req, res) => serviceControllerClasse.updateClasse(req, res));
 router.route('/get/classe').get((req, res) => serviceControllerClasse.getClasses(req, res));
+
+//Recursos Humanos 
+router.route('/update/status').put((req, res) => serviceControllerRh.editRequeriment(req, res));
+
 
 
 //Loguer 

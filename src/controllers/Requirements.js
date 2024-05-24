@@ -110,6 +110,8 @@ const serviceControllerRequirements = {
         }
     },
 
+    
+
     createRequirementsWarning: async (req, res) => {
         try {
             const { idUser, promoted, reason } = req.body;

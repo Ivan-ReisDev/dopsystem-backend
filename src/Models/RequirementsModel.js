@@ -8,12 +8,12 @@ const requirementsSchema = new mongoose.Schema({
 
     newPatent: {
         type: String,
-        required: true
+        required: false
     },
 
     patentOperador : {
         type: String,
-        required: true
+        required: false
     },
 
     operator: {
@@ -23,14 +23,19 @@ const requirementsSchema = new mongoose.Schema({
 
     reason: {
         type: String,
-        required: false
-    },
-
-    reason: {
-        type: String,
         required: true
     },
 
+    classe: {
+        type: String,
+        required: false
+    },
+
+    team: {
+        type: String,
+        required: false
+    },
+    
     typeRequirement: {
         type: String,
         required: true
