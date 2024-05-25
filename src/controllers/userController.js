@@ -165,7 +165,7 @@ const serviceControllerUser = {
         nickname.userType = nickname.userType;
 
         await nickname.save();
-        res.status(200).json({ msg: 'Usuário atualizado com sucesso' });
+        res.status(200).json({ msg: 'Usuário ativado com sucesso' });
 
       };
 
