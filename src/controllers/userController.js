@@ -34,14 +34,13 @@ const connectHabbo = async (nick) => {
 
 const serviceControllerUser = {
 
-
   register: async (req, res) => {
-
     try {
       const formdata = req.body;
       const { nick, patent, classes } = formdata;
-      const passwordConf = "DOPsystem@@2024"
+      const passwordConf = `${process.env.USER_PASS_REGISTER}` 
       const nickname = await User.findOne({ nickname: nick });
+
       if (nickname) {
         return res.status(422).json({ error: "Ops! Esse usuário já existe" });
       }
@@ -51,14 +50,15 @@ const serviceControllerUser = {
 
       const newUser = {
         nickname: nick,
+        password: passwordHash,
         patent: patent,
         classes: classes,
         teans: '',
         status: 'Pendente',
-        password: passwordHash,
+        tag: 'Vazio',
+        warnings: 0,
+        medals: 0,
         userType: 'User',
-        warnings: "0",
-        medals: "0"
       };
 
       const createUser = await User.create(newUser);
@@ -158,6 +158,9 @@ const serviceControllerUser = {
         nickname.classes = nickname.classes;
         nickname.teans = nickname.teans;
         nickname.status = 'Ativo';
+        nickname.tag = nickname.tag;
+        nickname.warnings = nickname.warnings;
+        nickname.medals = nickname.medals;
         nickname.password = passwordHash;
         nickname.userType = nickname.userType;
 
@@ -165,8 +168,6 @@ const serviceControllerUser = {
         res.status(200).json({ msg: 'Usuário atualizado com sucesso' });
 
       };
-
-
 
     } catch (error) {
       console.error('Não foi possível atualizar o usuário.', error);

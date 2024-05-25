@@ -98,7 +98,7 @@ const serviceControllerClasse = {
       const nicknameStudant = await User.findOne({ nickname: promoted });
       const teamDb = await Teams.findOne({ nameTeams: team });
       const classeDb = await Classes.findOne({ nameClasse: classe });
-
+      console.log(`Postar aula: idUser:  ${idUser} , promoted: ${promoted},  reason: ${reason},  classe: ${classe}, team: ${team} `)
       const membersTeam = teamDb.members.some(member => member.nickname === nicknameDocente.nickname);
 
       if (!idUser || !promoted || !reason || !classe || !team) {
