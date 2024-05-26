@@ -4,6 +4,7 @@ const { InfoSystem } = require('../Models/systemModel.js');
 const { Classes } = require('../Models/classesModel.js')
 const { Requirements } = require("../Models/RequirementsModel");
 const { Teams } = require("../Models/teamsModel");
+const bcrypt = require("bcryptjs");
 const mongoose = require('mongoose');
 
 const createLogger = async (action, user, name, ip) => {
@@ -14,7 +15,58 @@ const createLogger = async (action, user, name, ip) => {
   }
 
   await Logger.create(newLogger);
+}
 
+const register = async (nick) => {
+  try {
+    const passwordConf = `${process.env.USER_PASS_REGISTER}` 
+    const nickname = await User.findOne({ nickname: nick });
+
+    if (nickname && (nickname.status === "Exonerado" || nickname.status === "Banido")) {
+      return {
+        info: "Ops! Este usuário encontra-se banido ou exonerado.",
+        status: false 
+      };
+    } else if (nickname && (nickname.status === "Ativo" || nickname.status === "Pendente") ) {
+      return {
+        info: "Ops! Este usuário encontra-se no quadro de funcionários da DOP",
+        status: false 
+      };
+    } else {
+      const saltHash = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(passwordConf, saltHash);
+  
+      const newUser = {
+        nickname: nick,
+        password: passwordHash,
+        patent: "Soldado",
+        classes: "Curso Inicial [C.I]",
+        teans: '',
+        status: 'Pendente',
+        tag: 'Vazio',
+        warnings: 0,
+        medals: 0,
+        userType: 'User',
+      };
+  
+      const createUser = await User.create(newUser);
+      return createUser
+        ? {
+          info: "Usuário cadastrado com sucesso.",
+          status: true 
+        }
+        : {
+          info: "Houve um erro, tente novamente mais tarde",
+          status: false 
+        };
+    }
+  } catch (error) {
+    console.error("Erro ao registrar", error);
+    return {
+      info: "Erro ao efetuar cadastro",
+      status: false
+    };
+  }
 }
 
 
@@ -137,6 +189,49 @@ const serviceControllerClasse = {
       res.status(500).json({ msg: 'Erro ao postar requerimento.' });
     }
   },
+
+  postCI: async (req, res) => {
+    try {
+      const { idUser, student, reason, } = req.body;
+      const registrered = await register(student);
+      console.log(registrered)
+      if (registrered.status === false ) {
+        return res.status(422).json({ error: registrered.info });
+
+      } 
+      const nicknameDocente = await User.findOne({ _id: idUser });
+
+      if (!idUser || !reason || !student) {
+        return res.status(404).json({ msg: 'Por favor preencha todos os campos solicitados' });
+
+      }  if (!nicknameDocente) {
+        return res.status(400).json({ msg: 'Dados não encontrados, por favor tente mais tarde' });
+
+      } 
+
+        const newRequirement = {
+          promoted: student,
+          classe: "Curso Inicial [C.I]",
+          reason,
+          operator: nicknameDocente.nickname,
+          team: 'Corpo de Funcionários',
+          typeRequirement: "Aula",
+          status: "Aprovado"
+        };
+
+        const createRequirement = await Requirements.create(newRequirement);
+        if (!createRequirement) {
+          return res.status(422).json({ error: 'Ops! Parece que houve um erro, tente novamente mais tarde.' });
+        }
+
+        return res.status(201).json({ msg: 'Requerimento postado com sucesso.' });
+
+    } catch (error) {
+      console.error('Erro ao postar requerimento.', error);
+      res.status(500).json({ msg: 'Erro ao postar requerimento.' });
+    }
+  },
+  
 
 
   updateClasse: async (req, res) => {
