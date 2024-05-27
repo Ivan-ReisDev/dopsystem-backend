@@ -61,9 +61,7 @@ router.route('/get/classe').get(authGuard,(req, res) => serviceControllerClasse.
 
 //Recursos Humanos 
 router.route('/update/status').put(authGuard,(req, res) => serviceControllerRh.editRequeriment(req, res));
-
-
-
+router.route('/delete/status').delete(authGuard,(req, res) => serviceControllerRh.deleteRequeriments(req, res))
 //Loguer 
 router.route('/loggers').get(authGuard,(req, res) => serviceControllerLogger.getAllLogs(req, res))
 

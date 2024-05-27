@@ -179,55 +179,54 @@ const serviceControllerUser = {
   //Para deletar é necessário passar um parametro que é o ID do usuário que será deletado e o nick do usuário que irá deletar.
   // O código irá verificar se quem está deletando é admin e se quem será deletado existe no banco de dados.
   
-  updateUser: async (req, res) => {
-    try {
-      const { securityCode, formdata } = req.body;
-      const { newUserDopSystem, newPasswordDopSystem, newPasswordDopSystemConf } = formdata;
-      const nickname = await User.findOne({ nickname: newUserDopSystem });
+  // updateUserAdmin: async (req, res) => {
+  //   try {
+  //     const { nickname, patent, classes, teans, status, tag, warnings, medals, userType } = req.body;
+  //     const nickname = await User.findOne({ nickname: newUserDopSystem });
 
-      if (!nickname) {
-        res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
-      } else {
+  //     if (!nickname) {
+  //       res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
+  //     } else {
 
-        const motto = await connectHabbo(nickname.nickname);
+  //       const motto = await connectHabbo(nickname.nickname);
 
-        if (newPasswordDopSystemConf !== newPasswordDopSystem) {
-          return res.status(404).json({ msg: "Senha incorreta tente novamente." });
-        };
+  //       if (newPasswordDopSystemConf !== newPasswordDopSystem) {
+  //         return res.status(404).json({ msg: "Senha incorreta tente novamente." });
+  //       };
 
-        if (nickname.status !== 'Pendente') {
-          return res.status(404).json({ msg: "Ops! Este usuário já se encontra ativo" });
-        };
+  //       if (nickname.status !== 'Pendente') {
+  //         return res.status(404).json({ msg: "Ops! Este usuário já se encontra ativo" });
+  //       };
 
-        if (motto.motto !== securityCode) {
-          return res.status(404).json({ msg: "Ops! Seu código de acesso está errado, por favor verifique sua missão." });
-        };
+  //       if (motto.motto !== securityCode) {
+  //         return res.status(404).json({ msg: "Ops! Seu código de acesso está errado, por favor verifique sua missão." });
+  //       };
 
-        const saltHash = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(newPasswordDopSystem, saltHash);
+  //       const saltHash = await bcrypt.genSalt(10);
+  //       const passwordHash = await bcrypt.hash(newPasswordDopSystem, saltHash);
 
-        nickname.nickname = nickname.nickname;
-        nickname.patent = nickname.patent;
-        nickname.classes = nickname.classes;
-        nickname.teans = nickname.teans;
-        nickname.status = 'Ativo';
-        nickname.tag = nickname.tag;
-        nickname.warnings = nickname.warnings;
-        nickname.medals = nickname.medals;
-        nickname.password = passwordHash;
-        nickname.userType = nickname.userType;
+  //       nickname.nickname = nickname.nickname;
+  //       nickname.patent = nickname.patent;
+  //       nickname.classes = nickname.classes;
+  //       nickname.teans = nickname.teans;
+  //       nickname.status = 'Ativo';
+  //       nickname.tag = nickname.tag;
+  //       nickname.warnings = nickname.warnings;
+  //       nickname.medals = nickname.medals;
+  //       nickname.password = passwordHash;
+  //       nickname.userType = nickname.userType;
 
-        await nickname.save();
-        res.status(200).json({ msg: 'Usuário ativado com sucesso' });
+  //       await nickname.save();
+  //       res.status(200).json({ msg: 'Usuário ativado com sucesso' });
 
-      };
+  //     };
 
-    } catch (error) {
-      console.error('Não foi possível atualizar o usuário.', error);
-      res.status(500).json({ msg: 'Não foi possível atualizar o usuário.' })
-    }
+  //   } catch (error) {
+  //     console.error('Não foi possível atualizar o usuário.', error);
+  //     res.status(500).json({ msg: 'Não foi possível atualizar o usuário.' })
+  //   }
 
-  },
+  // },
 
   
   
@@ -305,7 +304,7 @@ const serviceControllerUser = {
     try {
       const nickname = req.query.nickname;
       const typeRequeriment = req.query.typeRequeriment;
-      const users = await User.find().sort({ nickname: 1 });
+      const users = await User.find().sort({ nickname: 1 }).select("-password");
       const resUser = nickname
           ? users.filter(user => user.nickname.includes(nickname))
           : users;

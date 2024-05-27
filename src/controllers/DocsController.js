@@ -29,7 +29,7 @@ const serviceControllerDocs = {
                 return res.status(422).json({ error: 'Preencha todos os campos' });
             }
 
-            if (nickname && (nickname.userType === "Admin" || nickname.nickname === teams.leader)) {
+            if (nickname && (nickname.userType === "Admin" || nickname.nickname === teams.leader || nickname.userType === "Diretor")) {
                 const newDoc = {
                     nameDocs: nameDocs,
                     content: content,
@@ -98,7 +98,6 @@ const serviceControllerDocs = {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
             const { idUser, nameDocs, content, docsType, idDoc } = req.body;
-            console.log(`docId: ${idDoc}, idUser: ${idUser}, nameDocs: ${nameDocs}, content: ${content}, docsType: ${docsType}`);
 
             // Validação do ID do documento
             if (!mongoose.Types.ObjectId.isValid(idDoc)) {
@@ -113,7 +112,7 @@ const serviceControllerDocs = {
                 return res.status(404).json({ msg: 'Ops! Documento não encontrado.' });
             }
 
-            if (userAdmin && (userAdmin.userType === "Admin" || userAdmin.nickname === teams.leader)) {
+            if (userAdmin && (userAdmin.userType === "Admin" || userAdmin.nickname === teams.leader || userAdmin.userType === "Diretor")) {
 
                 docUpdate.nameDocs = nameDocs ? nameDocs : docUpdate.nameDocs;
                 docUpdate.content = content ? content : docUpdate.content;
@@ -143,7 +142,7 @@ const serviceControllerDocs = {
                 return res.status(404).json({ msg: 'Ops! Documento não encontrado' });
             }
 
-            if (admin && admin.userType === "Admin") {
+            if (admin && (admin.userType === "Admin" || admin.userType === "Diretor")) {
                 await DocsSystem.findByIdAndDelete(deleteDoc._id);
                 createLogger("Deletou o documento", admin.nickname, deleteDoc.nameDocs, ipAddress)
                 return res.status(200).json({ msg: 'Documento deletedo com sucesso' });

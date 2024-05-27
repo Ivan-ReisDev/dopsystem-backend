@@ -3,7 +3,6 @@ const { User } = require("../Models/useModel");
 const { Requirements } = require("../Models/RequirementsModel");
 const { InfoSystem } = require("../Models/systemModel");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 
 const isDiretor = async (diretor) => {
     const info = await InfoSystem.findOne();
@@ -147,7 +146,7 @@ const serviceControllerRequirements = {
             const indexRealOperator = patentOperadorIndex - 2;
 
             const validete = await isDiretor(nicknameOperator.patent);
-            if (nicknameRelegation <= indexRealOperator || nicknameOperator.userType === "Admin" || validete === true) {
+            if (patentRelegationIndex <= indexRealOperator || nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
                     promoted,
                     newPatent: nicknameRelegation.patent,
@@ -203,7 +202,7 @@ const serviceControllerRequirements = {
             const indexRealOperator = patentOperadorIndex - 2;
 
             const validete = await isDiretor(nicknameOperator.patent);
-            if (nicknameRelegation <= indexRealOperator || nicknameOperator.userType === "Admin" || validete === true) {
+            if (patentRelegationIndex <= indexRealOperator || nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
                     promoted,
                     newPatent: "Civil",

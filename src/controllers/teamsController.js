@@ -68,7 +68,7 @@ const serviceControllerTeams = {
         try {
             
             const { idUser, nickMember, idTeams} = req.body;
-            console.log(`idMember: ${nickMember}, idUser: ${idUser}, idUser: ${idTeams}`);
+            
     
             // Validação do ID do documento
             if (!mongoose.Types.ObjectId.isValid(idTeams)) {
@@ -91,7 +91,7 @@ const serviceControllerTeams = {
                 const teamUpdate = await Teams.findById(idTeams);
             
     
-            if (userAdmin && userAdmin.userType === 'Admin' || teamUpdate.leader === userAdmin.nickname) {
+            if (userAdmin && userAdmin.userType === 'Admin' || userAdmin.userType === 'Diretor' || teamUpdate.leader === userAdmin.nickname || teamUpdate.viceLeader === userAdmin.nickname) {
                 const newArray = teamUpdate.members.filter(user => user.nickname !== userMember.nickname);
 
                 teamUpdate.nameTeams = teamUpdate.nameTeams;
@@ -135,7 +135,6 @@ const serviceControllerTeams = {
         try {
             
             const { idUser, nickMember, idTeams} = req.body;
-            console.log(`idMember: ${nickMember}, idUser: ${idUser}, idUser: ${idTeams}`);
     
             // Validação do ID do documento
             if (!mongoose.Types.ObjectId.isValid(idTeams)) {
@@ -158,7 +157,7 @@ const serviceControllerTeams = {
             const teamUpdate = await Teams.findById(idTeams);
             
     
-            if (userAdmin && userAdmin.userType === 'Admin' || teamUpdate.leader === userAdmin.nickname) {
+            if (userAdmin && userAdmin.userType === 'Admin' || userAdmin.userType === 'Diretor' || teamUpdate.leader === userAdmin.nickname || teamUpdate.viceLeader === userAdmin.nickname) {
 
                 const newMember = {
                     nickname: userMember.nickname,

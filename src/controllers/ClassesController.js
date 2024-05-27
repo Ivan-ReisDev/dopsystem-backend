@@ -150,7 +150,6 @@ const serviceControllerClasse = {
       const nicknameStudant = await User.findOne({ nickname: promoted });
       const teamDb = await Teams.findOne({ nameTeams: team });
       const classeDb = await Classes.findOne({ nameClasse: classe });
-      console.log(`Postar aula: idUser:  ${idUser} , promoted: ${promoted},  reason: ${reason},  classe: ${classe}, team: ${team} `)
       const membersTeam = teamDb.members.some(member => member.nickname === nicknameDocente.nickname);
 
       if (!idUser || !promoted || !reason || !classe || !team) {
@@ -159,7 +158,7 @@ const serviceControllerClasse = {
       } else if (!nicknameDocente || !nicknameStudant || !classeDb || !teamDb) {
         return res.status(400).json({ msg: 'Dados não encontrados, por favor tente mais tarde' });
 
-      } else if (nicknameDocente.userType === "Admin" || membersTeam || nicknameDocente.nickname === teamDb.leader || nicknameDocente.nickname === teamDb.viceLeader) {
+      } else if (nicknameDocente.userType === "Admin" || nicknameDocente.userType === "Diretor" || membersTeam || nicknameDocente.nickname === teamDb.leader || nicknameDocente.nickname === teamDb.viceLeader) {
 
         const newRequirement = {
           promoted: nicknameStudant.nickname,
@@ -238,8 +237,6 @@ const serviceControllerClasse = {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
       const { idUser, idClasse, nameClasse, team, patent } = req.body;
-
-      console.log(`idClasse: ${idClasse}, idUser: ${idUser}, nameClasse: ${nameClasse}, team: ${team}, patent: ${patent}`);
 
       // Validação do ID do documento
       if (!mongoose.Types.ObjectId.isValid(idClasse)) {
