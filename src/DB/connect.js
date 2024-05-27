@@ -5,7 +5,7 @@ async function main() {
     try {
         const dbUser = process.env.DB_USER;
         const dbPassword = process.env.DB_PASSK;
-        const dbName = process.env.DB_NAME;
+        const dbName = process.env.DB_NAMEK;
         const dbHost = process.env.DB_HOST;
 
         mongoose.set("strictQuery", true);
