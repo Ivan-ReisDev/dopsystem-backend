@@ -134,7 +134,7 @@ const serviceControllerTeams = {
     addUserTeams: async (req, res) => {
         try {
             
-            const { idUser, nickMember, idTeams} = req.body;
+            const { idUser, nickMember, office,  idTeams} = req.body;
     
             // Validação do ID do documento
             if (!mongoose.Types.ObjectId.isValid(idTeams)) {
@@ -161,7 +161,7 @@ const serviceControllerTeams = {
 
                 const newMember = {
                     nickname: userMember.nickname,
-                    office: "Membro"
+                    office,
                 }
 
                 let newMemberArray = teamUpdate.members;

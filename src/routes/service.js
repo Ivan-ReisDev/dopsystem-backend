@@ -23,6 +23,7 @@ router.route('/profile').get(authGuard, getcurrentUser, (req, res) => serviceCon
 router.route('/profile/pages').get(authGuard,(req, res) => serviceControllerUser.getAll(req, res));
 router.route('/search').get(authGuard,(req, res) => serviceControllerUser.searchUser(req, res));
 router.route('/admin/update').put(authGuard,(req, res) => serviceControllerUser.updateUserAdmin(req, res))
+router.route('/update/tag').put(authGuard,(req, res) => serviceControllerUser.createTag(req, res))
 
 
 

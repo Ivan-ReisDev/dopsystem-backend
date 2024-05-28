@@ -12,7 +12,7 @@ const GenerateToken = (id) => {
     { id },
     "KS1486735ANFSAN36454BFGSAF45471PKPEKGPSAGK1454EDGG",
     {
-      expiresIn: "7d",
+      expiresIn: "1d",
     }
   );
 };
@@ -38,7 +38,7 @@ const serviceControllerUser = {
     try {
       const formdata = req.body;
       const { nick, patent, classes } = formdata;
-      const passwordConf = `${process.env.USER_PASS_REGISTER}` 
+      const passwordConf = `${process.env.USER_PASS_REGISTER}`
       const nickname = await User.findOne({ nickname: nick });
 
       if (nickname) {
@@ -77,7 +77,7 @@ const serviceControllerUser = {
     try {
       const { nick, password } = req.body;
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-   
+
       const checkUser = await User.findOne({ nickname: nick })
 
       if (!checkUser) {
@@ -97,7 +97,7 @@ const serviceControllerUser = {
         return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' })
       }
 
-  
+
 
       const newLogger = {
         user: checkUser.nickname,
@@ -178,30 +178,30 @@ const serviceControllerUser = {
 
   //Para deletar é necessário passar um parametro que é o ID do usuário que será deletado e o nick do usuário que irá deletar.
   // O código irá verificar se quem está deletando é admin e se quem será deletado existe no banco de dados.
-  
+
   updateUserAdmin: async (req, res) => {
     try {
       const { idUser, idEdit, nickname, patent, status, tag, warnings, medals, userType } = req.body;
       const admin = await User.findOne({ _id: idUser });
-      const cont = await User.findOne({_id: idEdit});
+      const cont = await User.findOne({ _id: idEdit });
 
       if (!admin || !cont) {
         res.status(404).json({ error: 'Dados não encontrados.' });
       } else {
 
-        if(admin.userType === "Admin") {
+        if (admin.userType === "Admin") {
 
           cont.nickname = nickname ? nickname : cont.nickname;
-          cont.classes = cont.classes; 
+          cont.classes = cont.classes;
           cont.teans = cont.teans;
           cont.patent = patent ? patent : cont.patent;
           cont.status = status ? status : cont.status;
           cont.tag = tag ? tag : cont.tag;
           cont.warnings = warnings ? warnings : cont.warnings;
           cont.medals = medals ? medals : cont.medals;
-          cont.password =  cont.password;
-          cont.userType = userType ? userType :cont.userType;
-  
+          cont.password = cont.password;
+          cont.userType = userType ? userType : cont.userType;
+
           await cont.save();
           return res.status(200).json({ msg: 'Usuário atualizado com sucesso.' });
         }
@@ -217,11 +217,41 @@ const serviceControllerUser = {
 
   },
 
+  createTag: async (req, res) => {
+    try {
+      const { idUser, tag } = req.body;
+      const cont = await User.findOne({ _id: idUser });
   
+      if (!cont) {
+          return res.status(404).json({ error: 'Dados não encontrados.' });
+      }
   
+      // Transforma o nickname em minúsculas para tornar a comparação insensível a maiúsculas/minúsculas
+      const nicknameLower = cont.nickname.toLowerCase();
   
+      // Verifica se todas as letras da tag estão presentes no nickname
+      const tagOk = [...tag.toLowerCase()].every(letra => nicknameLower.includes(letra));
   
+      if (tagOk) {
+          cont.tag = tag ? tag : cont.tag;
   
+          await cont.save();
+          return res.status(200).json({ msg: 'Tag cadastrada com sucesso' });
+      } else {
+          return res.status(400).json({ error: 'Os caracteres não estão presentes no seu nickname.' });
+      }
+  } catch (error) {
+      return res.status(500).json({ error: 'Ocorreu um erro ao processar a requisição.' });
+  }
+  
+  },
+
+
+
+
+
+
+
   deleteUsers: async (req, res) => {
     try {
       const userId = req.params.userId;
@@ -263,15 +293,15 @@ const serviceControllerUser = {
 
   getAll: async (req, res) => {
     try {
-        // Consulta para obter todos os usuários, excluindo a senha
-        const users = await User.find().select("-password");
-        // Envia os usuários sem a senha como resposta
-        res.json(users);
+      // Consulta para obter todos os usuários, excluindo a senha
+      const users = await User.find().select("-password");
+      // Envia os usuários sem a senha como resposta
+      res.json(users);
     } catch (error) {
-        console.error('Usuário não encontrado', error);
-        res.status(500).json({ msg: 'Usuário não encontrado' });
+      console.error('Usuário não encontrado', error);
+      res.status(500).json({ msg: 'Usuário não encontrado' });
     }
-},
+  },
 
   getAllNicks: async (req, res) => {
     try {
@@ -293,31 +323,31 @@ const serviceControllerUser = {
       const typeRequeriment = req.query.typeRequeriment;
       const users = await User.find().sort({ nickname: 1 }).select("-password");
       const resUser = nickname
-          ? users.filter(user => user.nickname.includes(nickname))
-          : users;
+        ? users.filter(user => user.nickname.includes(nickname))
+        : users;
       const info = await InfoSystem.findOne();
       if (!info || !info.patents || !info.paidPositions) {
-          return res.status(500).json({ msg: 'Informações do sistema não encontradas.' });
+        return res.status(500).json({ msg: 'Informações do sistema não encontradas.' });
       }
-  
+
       const newPatents = resUser.map(user => {
-          const patentRelegationIndex = info.patents.includes(user.patent)
-              ? info.patents.indexOf(user.patent)
-              : info.paidPositions.indexOf(user.patent);
-        if( typeRequeriment === "Promoção") {
+        const patentRelegationIndex = info.patents.includes(user.patent)
+          ? info.patents.indexOf(user.patent)
+          : info.paidPositions.indexOf(user.patent);
+        if (typeRequeriment === "Promoção") {
           const indexRealOperator = patentRelegationIndex + 1;
           return info.patents[indexRealOperator];
         }
 
-        if(typeRequeriment === "Rebaixamento") {
+        if (typeRequeriment === "Rebaixamento") {
           const indexRealOperator = patentRelegationIndex - 1;
           return info.patents[indexRealOperator];
         }
 
       });
-  
+
       return res.json({ users: resUser, newPatents: newPatents });
-  } catch (error) {
+    } catch (error) {
       console.log(error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
