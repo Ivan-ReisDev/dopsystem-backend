@@ -238,7 +238,6 @@ const serviceControllerRequirements = {
             const nicknameOperator = await User.findOne({ _id: idUser });
             const requirements = await Requirements.find({ operator: nicknameOperator.nickname });
             const post = requirements.slice(-1)[0];
-            console.log(post)
 
             const nickname = await User.findOne({ nickname: post.promoted });
 

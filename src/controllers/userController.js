@@ -77,7 +77,7 @@ const serviceControllerUser = {
     try {
       const { nick, password } = req.body;
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-      console.log(nick)
+   
       const checkUser = await User.findOne({ nickname: nick })
 
       if (!checkUser) {
@@ -97,7 +97,7 @@ const serviceControllerUser = {
         return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' })
       }
 
-      console.log(ipAddress)
+  
 
       const newLogger = {
         user: checkUser.nickname,
@@ -179,54 +179,43 @@ const serviceControllerUser = {
   //Para deletar é necessário passar um parametro que é o ID do usuário que será deletado e o nick do usuário que irá deletar.
   // O código irá verificar se quem está deletando é admin e se quem será deletado existe no banco de dados.
   
-  // updateUserAdmin: async (req, res) => {
-  //   try {
-  //     const { nickname, patent, classes, teans, status, tag, warnings, medals, userType } = req.body;
-  //     const nickname = await User.findOne({ nickname: newUserDopSystem });
+  updateUserAdmin: async (req, res) => {
+    try {
+      const { idUser, idEdit, nickname, patent, status, tag, warnings, medals, userType } = req.body;
+      const admin = await User.findOne({ _id: idUser });
+      const cont = await User.findOne({_id: idEdit});
 
-  //     if (!nickname) {
-  //       res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
-  //     } else {
+      if (!admin || !cont) {
+        res.status(404).json({ error: 'Dados não encontrados.' });
+      } else {
 
-  //       const motto = await connectHabbo(nickname.nickname);
+        if(admin.userType === "Admin") {
 
-  //       if (newPasswordDopSystemConf !== newPasswordDopSystem) {
-  //         return res.status(404).json({ msg: "Senha incorreta tente novamente." });
-  //       };
+          cont.nickname = nickname ? nickname : cont.nickname;
+          cont.classes = cont.classes; 
+          cont.teans = cont.teans;
+          cont.patent = patent ? patent : cont.patent;
+          cont.status = status ? status : cont.status;
+          cont.tag = tag ? tag : cont.tag;
+          cont.warnings = warnings ? warnings : cont.warnings;
+          cont.medals = medals ? medals : cont.medals;
+          cont.password =  cont.password;
+          cont.userType = userType ? userType :cont.userType;
+  
+          await cont.save();
+          return res.status(200).json({ msg: 'Usuário atualizado com sucesso.' });
+        }
 
-  //       if (nickname.status !== 'Pendente') {
-  //         return res.status(404).json({ msg: "Ops! Este usuário já se encontra ativo" });
-  //       };
+        return res.status(403).json({ error: 'Você nao tem permissão para atualizar esse usuário.' });
 
-  //       if (motto.motto !== securityCode) {
-  //         return res.status(404).json({ msg: "Ops! Seu código de acesso está errado, por favor verifique sua missão." });
-  //       };
+      };
 
-  //       const saltHash = await bcrypt.genSalt(10);
-  //       const passwordHash = await bcrypt.hash(newPasswordDopSystem, saltHash);
+    } catch (error) {
+      console.error('Não foi possível atualizar o usuário.', error);
+      res.status(500).json({ msg: 'Não foi possível atualizar o usuário.' })
+    }
 
-  //       nickname.nickname = nickname.nickname;
-  //       nickname.patent = nickname.patent;
-  //       nickname.classes = nickname.classes;
-  //       nickname.teans = nickname.teans;
-  //       nickname.status = 'Ativo';
-  //       nickname.tag = nickname.tag;
-  //       nickname.warnings = nickname.warnings;
-  //       nickname.medals = nickname.medals;
-  //       nickname.password = passwordHash;
-  //       nickname.userType = nickname.userType;
-
-  //       await nickname.save();
-  //       res.status(200).json({ msg: 'Usuário ativado com sucesso' });
-
-  //     };
-
-  //   } catch (error) {
-  //     console.error('Não foi possível atualizar o usuário.', error);
-  //     res.status(500).json({ msg: 'Não foi possível atualizar o usuário.' })
-  //   }
-
-  // },
+  },
 
   
   
@@ -287,8 +276,6 @@ const serviceControllerUser = {
   getAllNicks: async (req, res) => {
     try {
       const users = await User.find();
-      console.log(users);
-
       // Mapeia a lista de usuários para extrair apenas os apelidos
       const nicknames = users.map(user => user.nickname);
 

@@ -193,7 +193,7 @@ const serviceControllerClasse = {
     try {
       const { idUser, student, reason, } = req.body;
       const registrered = await register(student);
-      console.log(registrered)
+
       if (registrered.status === false ) {
         return res.status(422).json({ error: registrered.info });
 

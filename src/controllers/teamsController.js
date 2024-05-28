@@ -79,12 +79,12 @@ const serviceControllerTeams = {
                 
     
             if (!userMember) {
-                console.log('Ops! Usuário não encontrado.');
+  
                 return res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
             }
 
             if (!userAdmin) {
-                console.log('Ops! Usuário não encontrado.');
+            
                 return res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
             }
 
@@ -145,12 +145,12 @@ const serviceControllerTeams = {
                 
     
             if (!userMember) {
-                console.log('Ops! Usuário não encontrado.');
+        
                 return res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
             }
 
             if (!userAdmin) {
-                console.log('Ops! Usuário não encontrado.');
+  
                 return res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
             }
 
@@ -267,7 +267,7 @@ const serviceControllerTeams = {
     searchTeams: async (req, res) => {
         try {
             const  nameTeams  = req.query.nameTeams;
-            console.log(nameTeams)
+  
             const teams = await Teams.find().sort({ nameTeams: 1 });
             const resTeams = nameTeams
                 ? teams.filter(team => team.nameTeams.includes(nameTeams)) 

@@ -21,7 +21,10 @@ router.route('/user/delete/:userId').delete(authGuard, getcurrentUser,(req, res)
 router.route('/users/update').put((req, res) => serviceControllerUser.updateUser(req, res))
 router.route('/profile').get(authGuard, getcurrentUser, (req, res) => serviceControllerUser.getAll(req, res));
 router.route('/profile/pages').get(authGuard,(req, res) => serviceControllerUser.getAll(req, res));
-router.route('/search').get(authGuard,(req, res) => serviceControllerUser.searchUser(req, res))
+router.route('/search').get(authGuard,(req, res) => serviceControllerUser.searchUser(req, res));
+router.route('/admin/update').put(authGuard,(req, res) => serviceControllerUser.updateUserAdmin(req, res))
+
+
 
 router.route('/teams/create').post(authGuard,(req, res) => serviceControllerTeams.createTeams(req, res));
 router.route('/teams/update/').put(authGuard,(req, res) => serviceControllerTeams.updateTeams(req, res))
@@ -64,6 +67,7 @@ router.route('/update/status').put(authGuard,(req, res) => serviceControllerRh.e
 router.route('/delete/status').delete(authGuard,(req, res) => serviceControllerRh.deleteRequeriments(req, res))
 //Loguer 
 router.route('/loggers').get(authGuard,(req, res) => serviceControllerLogger.getAllLogs(req, res))
+
 
 
 

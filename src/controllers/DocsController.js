@@ -81,7 +81,7 @@ const serviceControllerDocs = {
     searchTeams: async (req, res) => {
         try {
             const nameTeams = req.query.nameTeams;
-            console.log(nameTeams)
+
             const teams = await Teams.find().sort({ nameTeams: 1 });
             const resTeams = nameTeams
                 ? teams.filter(team => team.nameTeams.includes(nameTeams))
@@ -108,7 +108,7 @@ const serviceControllerDocs = {
             const docUpdate = await DocsSystem.findById(idDoc);
             const teams = await Teams.findOne({ nameTeams: docsType });
             if (!docUpdate) {
-                console.log('Ops! Documento não encontrado.');
+        
                 return res.status(404).json({ msg: 'Ops! Documento não encontrado.' });
             }
 
