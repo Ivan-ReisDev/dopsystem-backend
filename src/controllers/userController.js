@@ -142,31 +142,32 @@ const serviceControllerUser = {
           return res.status(404).json({ msg: "Senha incorreta tente novamente." });
         };
 
-        if (nickname.status !== 'Pendente') {
-          return res.status(404).json({ msg: "Ops! Este usuário já se encontra ativo" });
-        };
-
         if (motto.motto !== securityCode) {
           return res.status(404).json({ msg: "Ops! Seu código de acesso está errado, por favor verifique sua missão." });
         };
 
-        const saltHash = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(newPasswordDopSystem, saltHash);
+        if (nickname.status === 'Pendente' || nickname.status === 'Ativo') {
 
-        nickname.nickname = nickname.nickname;
-        nickname.patent = nickname.patent;
-        nickname.classes = nickname.classes;
-        nickname.teans = nickname.teans;
-        nickname.status = 'Ativo';
-        nickname.tag = nickname.tag;
-        nickname.warnings = nickname.warnings;
-        nickname.medals = nickname.medals;
-        nickname.password = passwordHash;
-        nickname.userType = nickname.userType;
+          const saltHash = await bcrypt.genSalt(10);
+          const passwordHash = await bcrypt.hash(newPasswordDopSystem, saltHash);
+  
+          nickname.nickname = nickname.nickname;
+          nickname.patent = nickname.patent;
+          nickname.classes = nickname.classes;
+          nickname.teans = nickname.teans;
+          nickname.status = 'Ativo';
+          nickname.tag = nickname.tag;
+          nickname.warnings = nickname.warnings;
+          nickname.medals = nickname.medals;
+          nickname.password = passwordHash;
+          nickname.userType = nickname.userType;
+  
+          await nickname.save();
+         return res.status(200).json({ msg: 'Usuário ativado com sucesso' });
+         
+        };
 
-        await nickname.save();
-        res.status(200).json({ msg: 'Usuário ativado com sucesso' });
-
+        return res.status(404).json({ msg: "Ops! Este usuário já se encontra ativo" });
       };
 
     } catch (error) {
