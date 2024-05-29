@@ -164,6 +164,45 @@ const serviceControllerDocs = {
         }
     },
 
-};
+  searchDoc: async (req, res) => {
+    try {
+        const document = req.query.typeDocument;
+        
+        if (!document) {
+            return res.status(500).json({ error: 'Informações do sistema não encontradas.' });
+        }
 
+        const docsType = await DocsSystem.find({ docsType: document }).select("-content");
+
+        const resUser = docsType.filter(doc => doc.docsType.includes(document));
+        
+        return res.json(resUser);
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+},
+
+searchDoc: async (req, res) => {
+    try {
+        const document = req.query.typeDocument;
+        
+        if (!document) {
+            return res.status(500).json({ error: 'Informações do sistema não encontradas.' });
+        }
+
+        const docsType = await DocsSystem.find({ docsType: document }).select("-content");
+
+        const resUser = docsType.filter(doc => doc.docsType.includes(document));
+        
+        return res.json(resUser);
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+},
+
+}
 module.exports = serviceControllerDocs;

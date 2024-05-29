@@ -20,12 +20,9 @@ router.route('/all/users').get(authGuard, (req, res) => serviceControllerUser.ge
 router.route('/user/delete/:userId').delete(authGuard, getcurrentUser,(req, res) => serviceControllerUser.deleteUsers(req, res))
 router.route('/users/update').put((req, res) => serviceControllerUser.updateUser(req, res))
 router.route('/profile').get(authGuard, getcurrentUser, (req, res) => serviceControllerUser.getAll(req, res));
-router.route('/profile/pages').get(authGuard,(req, res) => serviceControllerUser.getAll(req, res));
 router.route('/search').get(authGuard,(req, res) => serviceControllerUser.searchUser(req, res));
 router.route('/admin/update').put(authGuard,(req, res) => serviceControllerUser.updateUserAdmin(req, res))
 router.route('/update/tag').put(authGuard,(req, res) => serviceControllerUser.createTag(req, res))
-
-
 
 router.route('/teams/create').post(authGuard,(req, res) => serviceControllerTeams.createTeams(req, res));
 router.route('/teams/update/').put(authGuard,(req, res) => serviceControllerTeams.updateTeams(req, res))
@@ -40,6 +37,7 @@ router.route('/create/docs').post(authGuard,(req, res) => serviceControllerDocs.
 router.route('/all/docs').get(authGuard,(req, res) => serviceControllerDocs.getAllDocs(req, res))
 router.route('/update/docs').put(authGuard,(req, res) => serviceControllerDocs.updateDocs(req, res))
 router.route('/delete/docs').delete(authGuard,(req, res) => serviceControllerDocs.deleteDocs(req, res))
+router.route('/doc/search').get((req, res) => serviceControllerDocs.searchDoc(req, res));
 
 
 router.route('/all/info').get(authGuard,(req, res) => serviceControllerSystem.getInfoSystem(req, res))
