@@ -41,7 +41,7 @@ const register = async (nick) => {
         password: passwordHash,
         patent: "Soldado",
         classes: "Curso Inicial [C.I]",
-        teans: '',
+        teans: 'System',
         status: 'Pendente',
         tag: 'Vazio',
         warnings: 0,
