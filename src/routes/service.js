@@ -38,7 +38,7 @@ router.route('/all/docs').get(authGuard,(req, res) => serviceControllerDocs.getA
 router.route('/update/docs').put(authGuard,(req, res) => serviceControllerDocs.updateDocs(req, res))
 router.route('/delete/docs').delete(authGuard,(req, res) => serviceControllerDocs.deleteDocs(req, res))
 router.route('/doc/search').get((req, res) => serviceControllerDocs.searchDoc(req, res));
-
+router.route('/doc').get((req, res) => serviceControllerDocs.searchDocCompleted(req, res));
 
 router.route('/all/info').get(authGuard,(req, res) => serviceControllerSystem.getInfoSystem(req, res))
 router.route('/create/info').post(authGuard,(req, res) => serviceControllerSystem.createInfo(req, res));

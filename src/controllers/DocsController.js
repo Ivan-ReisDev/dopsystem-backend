@@ -164,7 +164,33 @@ const serviceControllerDocs = {
         }
     },
 
-  searchDoc: async (req, res) => {
+    searchDoc: async (req, res) => {
+        try {
+            const document = req.query.typeDocument;
+            
+            if (!document) {
+                return res.status(400).json({ error: 'O tipo de documento não foi fornecido.' });
+            }
+    
+            const docsType = await DocsSystem.find({ docsType: document }).select("-content");
+    
+            // Verifica se há documentos encontrados
+            if (docsType.length === 0) {
+                return res.json([]); // Retorna um array vazio se não houver documentos encontrados
+            }
+    
+            const resUser = docsType.filter(doc => doc.docsType.includes(document));
+            
+            return res.json(resUser);
+    
+        } catch (error) {
+            console.log(error);
+            return res.status(500).json({ error: 'Erro interno do servidor' });
+        }
+    },
+    
+
+searchDoc: async (req, res) => {
     try {
         const document = req.query.typeDocument;
         
@@ -184,19 +210,15 @@ const serviceControllerDocs = {
     }
 },
 
-searchDoc: async (req, res) => {
+searchDocCompleted: async (req, res) => {
     try {
-        const document = req.query.typeDocument;
+        const document = req.query.idDocument;
         
         if (!document) {
             return res.status(500).json({ error: 'Informações do sistema não encontradas.' });
         }
-
-        const docsType = await DocsSystem.find({ docsType: document }).select("-content");
-
-        const resUser = docsType.filter(doc => doc.docsType.includes(document));
-        
-        return res.json(resUser);
+        const docsType = await DocsSystem.findOne({ _id: document });
+        return res.json(docsType);
 
     } catch (error) {
         console.log(error);
