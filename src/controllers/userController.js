@@ -131,7 +131,7 @@ const serviceControllerUser = {
       const { securityCode, formdata } = req.body;
       const { newUserDopSystem, newPasswordDopSystem, newPasswordDopSystemConf } = formdata;
       const nickname = await User.findOne({ nickname: newUserDopSystem });
-
+      
       if (!nickname) {
         res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
       } else {
@@ -142,7 +142,7 @@ const serviceControllerUser = {
           return res.status(404).json({ msg: "Senha incorreta tente novamente." });
         };
 
-        if (motto.motto !== securityCode) {
+        if (motto.motto.trim() !== securityCode) {
           return res.status(404).json({ msg: "Ops! Seu código de acesso está errado, por favor verifique sua missão." });
         };
 
@@ -161,7 +161,6 @@ const serviceControllerUser = {
           nickname.medals = nickname.medals;
           nickname.password = passwordHash;
           nickname.userType = nickname.userType;
-  
           await nickname.save();
          return res.status(200).json({ msg: 'Usuário ativado com sucesso' });
          

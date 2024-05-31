@@ -14,14 +14,34 @@ function dataSeisDiasAtras() {
     return dataFormatada;
 }
 
-const createLogger = async (action, user,  name, ip) => {
+const createLogger = async (action, user, name, ip) => {
     const newLogger = {
         user: user,
         ip: ip,
         loggerType: `${action} ${name}`
-      }
+    }
 
-      await Logger.create(newLogger);
+    await Logger.create(newLogger);
+
+}
+
+const updateProfile = async (nickname, team) => {
+    const userMember = await User.findOne({ nickname: nickname });
+    console.log(userMember)
+    let newTeams = userMember.teans
+    newTeams.push(team);
+
+    userMember.nickname = userMember.nickname;
+    userMember.patent = userMember.patent;
+    userMember.classes = userMember.classes;
+    userMember.teans = newTeams;
+    userMember.status = userMember.status;
+    userMember.tag = userMember.tag;
+    userMember.warnings = userMember.warnings;
+    userMember.medals = userMember.medals;
+    userMember.password = userMember.password;
+    userMember.userType = userMember.userType;
+    await userMember.save();
 
 }
 
@@ -29,68 +49,66 @@ const serviceControllerTeams = {
 
     returnInfoTeams: async (req, res) => {
         try {
-          const typeRequirement = req.query.typeRequirement;
-          const nameTeams = req.query.teams;
-          const hoje = new Date();
-          const seisDiasAtras = new Date(dataSeisDiasAtras());
-          
-          const requeriments = await Requirements.find({
-            createdAt: {
-              $gte: seisDiasAtras,
-              $lte: hoje
-            }
-          });
-          
-          let newArrayRequirements;
-          if (typeRequirement) {
-            newArrayRequirements = requeriments.filter(objeto => objeto.team === typeRequirement);
-            const teams = await Teams.find({ nameTeams: nameTeams });
-            const newResponse = teams[0].members.map(user => {
-              const filteredRequirements = newArrayRequirements.filter(requirement => requirement.operator === user.nickname);
-              
-              return {
-                user: user,
-                requirements: filteredRequirements
-              };
+            const typeRequirement = req.query.typeRequirement;
+            const nameTeams = req.query.teams;
+            const hoje = new Date();
+            const seisDiasAtras = new Date(dataSeisDiasAtras());
+
+            const requeriments = await Requirements.find({
+                createdAt: {
+                    $gte: seisDiasAtras,
+                    $lte: hoje
+                }
             });
-       
-            return res.json(newResponse);
-          }
-      
-          return res.json(requeriments);
+
+            let newArrayRequirements;
+            if (typeRequirement) {
+                newArrayRequirements = requeriments.filter(objeto => objeto.team === typeRequirement);
+                const teams = await Teams.find({ nameTeams: nameTeams });
+                const newResponse = teams[0].members.map(user => {
+                    const filteredRequirements = newArrayRequirements.filter(requirement => requirement.operator === user.nickname);
+
+                    return {
+                        user: user,
+                        requirements: filteredRequirements
+                    };
+                });
+
+                return res.json(newResponse);
+            }
+
+            return res.json(requeriments);
         } catch (error) {
-          return res.status(500).json({ error: error.message });
+            return res.status(500).json({ error: error.message });
         }
-      },
+    },
 
 
     RemoveUserTeams: async (req, res) => {
         try {
-            
-            const { idUser, nickMember, idTeams} = req.body;
-            
-    
+            const { idUser, nickMember, idTeams } = req.body;
+
             // Validação do ID do documento
             if (!mongoose.Types.ObjectId.isValid(idTeams)) {
                 return res.status(400).json({ msg: 'ID do usuário inválido.' });
             }
-                const userAdmin = await User.findById(idUser);
-                const userMember = await User.findOne({nickname: nickMember});
-                
-    
+            const userAdmin = await User.findById(idUser);
+            const userMember = await User.findOne({ nickname: nickMember });
+
+
             if (!userMember) {
-  
+
                 return res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
             }
 
             if (!userAdmin) {
-            
+
                 return res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
             }
 
-                const teamUpdate = await Teams.findById(idTeams);
-            
-    
+            const teamUpdate = await Teams.findById(idTeams);
+
+
             if (userAdmin && userAdmin.userType === 'Admin' || userAdmin.userType === 'Diretor' || teamUpdate.leader === userAdmin.nickname || teamUpdate.viceLeader === userAdmin.nickname) {
                 const newArray = teamUpdate.members.filter(user => user.nickname !== userMember.nickname);
 
@@ -102,12 +120,12 @@ const serviceControllerTeams = {
                 teamUpdate.classes = teamUpdate.classes;
 
                 const newArrayMember = userMember.teans.filter(team => team !== teamUpdate.nameTeams);
-               
+
                 userMember.nickname = userMember.nickname;
                 userMember.patent = userMember.patent;
                 userMember.classes = userMember.classes;
                 userMember.teans = newArrayMember;
-                userMember.status =  userMember.status;
+                userMember.status = userMember.status;
                 userMember.tag = userMember.tag ? userMember.tag : "vázio";
                 userMember.warnings = userMember.warnings ? userMember.warnings : "0";
                 userMember.medals = userMember.medals ? userMember.medals : "0"
@@ -117,14 +135,14 @@ const serviceControllerTeams = {
                 await userMember.save();
                 await teamUpdate.save();
 
-               return res.status(200).json({ msg: 'Usuário removido com sucesso.' });
-                
+                return res.status(200).json({ msg: 'Usuário removido com sucesso.' });
+
             }
 
             return res.status(403).json({ msg: 'Ops! Parece que você não é um administrador.' });
-    
-  
-    
+
+
+
         } catch (error) {
             console.error('Ops! Não foi possível atualizar o documento.', error);
             res.status(500).json({ msg: 'Ops! Não foi possível atualizar o documento.' });
@@ -133,30 +151,30 @@ const serviceControllerTeams = {
 
     addUserTeams: async (req, res) => {
         try {
-            
-            const { idUser, nickMember, office,  idTeams} = req.body;
-    
+
+            const { idUser, nickMember, office, idTeams } = req.body;
+
             // Validação do ID do documento
             if (!mongoose.Types.ObjectId.isValid(idTeams)) {
-                return res.status(400).json({ msg: 'ID do usuário inválido.' });
+                return res.status(400).json({ error: 'ID do usuário inválido.' });
             }
-                const userAdmin = await User.findById(idUser);
-                const userMember = await User.findOne({nickname: nickMember});
-                
-    
+            const userAdmin = await User.findById(idUser);
+            const userMember = await User.findOne({ nickname: nickMember });
+
+
             if (!userMember) {
-        
-                return res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
+
+                return res.status(404).json({ error: 'Ops! Usuário não encontrado.' });
             }
 
             if (!userAdmin) {
-  
-                return res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
+
+                return res.status(404).json({ error: 'Ops! Usuário não encontrado.' });
             }
 
             const teamUpdate = await Teams.findById(idTeams);
-            
-    
+
+
             if (userAdmin && userAdmin.userType === 'Admin' || userAdmin.userType === 'Diretor' || teamUpdate.leader === userAdmin.nickname || teamUpdate.viceLeader === userAdmin.nickname) {
 
                 const newMember = {
@@ -166,9 +184,6 @@ const serviceControllerTeams = {
 
                 let newMemberArray = teamUpdate.members;
                 newMemberArray.push(newMember);
-                
-
-                
 
                 teamUpdate.nameTeams = teamUpdate.nameTeams;
                 teamUpdate.teamsType = teamUpdate.teamsType;
@@ -177,15 +192,15 @@ const serviceControllerTeams = {
                 teamUpdate.members = newMemberArray;
                 teamUpdate.classes = teamUpdate.classes;
 
-                const newAtt = teamUpdate.nameTeams 
+                const newAtt = teamUpdate.nameTeams
                 let newArrayAtt = userMember.teans;
                 newArrayAtt.push(newAtt);
-               
+
                 userMember.nickname = userMember.nickname;
                 userMember.patent = userMember.patent;
                 userMember.classes = userMember.classes;
                 userMember.teans = newArrayAtt;
-                userMember.status =  userMember.status;
+                userMember.status = userMember.status;
                 userMember.tag = userMember.tag;
                 userMember.warnings = userMember.warnings;
                 userMember.medals = userMember.medals;
@@ -195,59 +210,73 @@ const serviceControllerTeams = {
                 await userMember.save();
                 await teamUpdate.save();
 
-               return res.status(200).json({ msg: 'Usuário adicionado com sucesso.' });
-                
+                return res.status(200).json({ msg: 'Usuário adicionado com sucesso.' });
+
             }
 
             return res.status(403).json({ msg: 'Ops! Parece que você não é um administrador.' });
-    
-  
-    
+
+
+
         } catch (error) {
             console.error('Ops! Não foi possível atualizar o documento.', error);
             res.status(500).json({ msg: 'Ops! Não foi possível atualizar o documento.' });
         }
     },
-    
+
 
     createTeams: async (req, res) => {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
             const { idUser, nameTeams, leader, viceLeader } = req.body;
-            const nameTeam = await Teams.findOne({ nameTeams: nameTeams });
-            const nickname = await User.findOne({ _id: idUser });
 
+            if (!nameTeams || !leader || !viceLeader) {
+                return res.status(422).json({ error: 'Preencha todos os campos' })
+            }
+
+            const nickname = await User.findOne({ _id: idUser });
             if (nickname && nickname.userType !== "Admin") {
                 return res.status(422).json({ error: 'Ops! Você não é um administrador.' })
             }
 
+            const nicknameLeader = await User.findOne({ nickname: leader });
+            if (!nicknameLeader) {
+                return res.status(422).json({ error: 'Ops! Esse líder não existe em nossos sistemas.' })
+            }
+
+            const nameTeam = await Teams.findOne({ nameTeams: nameTeams });
             if (nameTeam) {
                 return res.status(422).json({ error: 'Ops! Essa equipe já existe.' })
             }
 
-            if (!nameTeams || !leader || !leader || !viceLeader ) {
-                return res.status(422).json({ error: 'Preencha todos os campos' })
-            }
-
-
-            const members = {
+            const membersLeader = {
                 nickname: leader,
                 office: "Líder"
             }
+
+            const membersViceLeader = {
+                nickname: viceLeader,
+                office: "Vice Líder"
+            }
+            
+            
+
+            updateProfile(nicknameLeader.nickname, nameTeams);
+            updateProfile(viceLeader, nameTeams);
 
             const newTeams = {
                 nameTeams: nameTeams,
                 leader: leader,
                 viceLeader: viceLeader,
-                members: members,
+                members: [membersLeader, membersViceLeader] ,
             }
 
             const newLogger = {
                 user: nickname.nickname,
                 ip: ipAddress,
                 loggerType: `Uma nova equipe foi criada com o nome: ${nameTeams}`
-              }
-              
+            }
+
             await Logger.create(newLogger);
 
             const createTeams = await Teams.create(newTeams)
@@ -266,11 +295,11 @@ const serviceControllerTeams = {
     //Função Responsável por mostrar todas as equipes ou filtrar as equipes de acordo com a query
     searchTeams: async (req, res) => {
         try {
-            const  nameTeams  = req.query.nameTeams;
-  
+            const nameTeams = req.query.nameTeams;
+
             const teams = await Teams.find().sort({ nameTeams: 1 });
             const resTeams = nameTeams
-                ? teams.filter(team => team.nameTeams.includes(nameTeams)) 
+                ? teams.filter(team => team.nameTeams.includes(nameTeams))
                 : teams;
             return res.json(resTeams);
         } catch (error) {
@@ -281,21 +310,21 @@ const serviceControllerTeams = {
 
     getAllTeams: async (req, res) => {
         try {
-          const teams = await Teams.find();
-          res.json(teams)
+            const teams = await Teams.find();
+            res.json(teams)
         } catch (error) {
-    
-          console.error('Usuário não encontrado', error);
-          res.status(500).json({ msg: 'Usuário não encontrado' })
-        }
-      },
 
-      
+            console.error('Usuário não encontrado', error);
+            res.status(500).json({ msg: 'Usuário não encontrado' })
+        }
+    },
+
+
 
     //Função para atualizar a equipe
     updateTeams: async (req, res) => {
         try {
-            const { idUser, teamsId,  nameTeams, leader, viceLeader, members } = req.body;
+            const { idUser, teamsId, nameTeams, leader, viceLeader, members } = req.body;
             const userAdmin = await User.findById(idUser)
             const teamsUpdate = await Teams.findById(teamsId);
 
@@ -303,16 +332,16 @@ const serviceControllerTeams = {
                 return res.status(404).json({ msg: 'Ops! Equipe não encontrada.' });
             }
 
-            if (userAdmin  && userAdmin.userType !== 'Admin') {
+            if (userAdmin && userAdmin.userType !== 'Admin') {
                 return res.status(404).json({ msg: 'Ops! Parece que você não é uma administrador.' });
             }
 
-            teamsUpdate.nameTeams = nameTeams !== ""? nameTeams : teamsUpdate.nameTeams;
+            teamsUpdate.nameTeams = nameTeams !== "" ? nameTeams : teamsUpdate.nameTeams;
             teamsUpdate.teamsType = teamsUpdate.teamsType;
             teamsUpdate.leader = leader !== "" ? leader : teamsUpdate.leader;
             teamsUpdate.viceLeader = viceLeader !== "" ? viceLeader : teamsUpdate.viceLeader;
-            
-            
+
+
             await teamsUpdate.save()
             res.status(200).json({ msg: 'Equipe atualizada com sucesso!' });
 
@@ -334,7 +363,7 @@ const serviceControllerTeams = {
             if (!deleteTeam) {
                 return res.status(404).json({ msg: 'Ops! Equipe ou órgão não encontrado' });
             }
-            if (admin && admin.userType !== "Admin" ) {
+            if (admin && admin.userType !== "Admin") {
                 return res.status(404).json({ msg: 'Ops! Parece que você não é uma administrador.' });
             }
 
