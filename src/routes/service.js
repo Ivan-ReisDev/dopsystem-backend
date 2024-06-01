@@ -11,7 +11,7 @@ const serviceControllerSystem = require('../controllers/systemController.js');
 const serviceControllerLogger = require('../controllers/logsController.js');
 const serviceControllerClasse = require('../controllers/ClassesController.js')
 const serviceControllerRh = require("../controllers/RhController.js")
-
+const serviceControllerPublication = require("../controllers/PublicationController.js")
 
 router.route('/register').post((req, res) => serviceControllerUser.register(req, res))
 router.route('/login').post((req, res) => serviceControllerUser.login(req, res))
@@ -67,8 +67,7 @@ router.route('/delete/status').delete(authGuard,(req, res) => serviceControllerR
 //Loguer 
 router.route('/loggers').get(authGuard,(req, res) => serviceControllerLogger.getAllLogs(req, res))
 
-
-
-
-
+router.route('/create/publication').post(authGuard,(req, res) => serviceControllerPublication.createPublication(req, res));
+router.route('/delete/publication').delete(authGuard,(req, res) => serviceControllerPublication.deletePublications(req, res));
+router.route('/publication').get(authGuard,(req, res) => serviceControllerPublication.getAllPublications(req, res));
 module.exports = router
