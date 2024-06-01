@@ -1,31 +1,43 @@
 const { User } = require('../Models/useModel');
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
 
 // Middleware de autorização
-const authGuard = async (req, res, next) => {
+const authGuard = (requiredRoles) => {
+    return async (req, res, next) => {
+        try {
+            // Obter o token do cabeçalho de autorização
+            const authHeader = req.headers["authorization"];
+            if (!authHeader) {
+                return res.status(401).json({ errors: ["Acesso negado!"] });
+            }
 
-    // Obter o token do cabeçalho de autorização
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
+            const token = authHeader.split(" ")[1];
+            if (!token) {
+                return res.status(401).json({ errors: ["Acesso negado!"] });
+            }
 
-    // Verificar se há um token no cabeçalho
-    if (!token) {
-        return res.status(401).json({ errors: ["Acesso negado!"] });
+            // Verificar o token usando a chave secreta
+            const verified = jwt.verify(token, 'KS1486735ANFSAN36454BFGSAF45471PKPEKGPSAGK1454EDGG');
+
+            // Adicionar informações do usuário autenticado à requisição (req)
+            req.user = await User.findById(verified.id).select("-password");
+            if (!req.user) {
+                return res.status(404).json({ errors: ["Usuário não encontrado."] });
+            }
+
+            // Verificar se o usuário tem uma das permissões necessárias
+            if (!requiredRoles.includes(req.user.userType)) {
+                return res.status(403).json({ errors: ["Permissão insuficiente."] });
+            }
+
+            // Chamar o próximo middleware
+            next();
+        } catch (err) {
+            console.error(err);
+            // Responder com erro em caso de token inválido ou qualquer outro erro
+            res.status(401).json({ errors: ["Token inválido."] });
+        }
     }
-
-    // Verificar se o token é válido
-    try {
-        // Verificar o token usando a chave secreta
-        const verified = jwt.verify(token, 'KS1486735ANFSAN36454BFGSAF45471PKPEKGPSAGK1454EDGG');
-
-        // Adicionar informações do usuário autenticado à requisição (req)
-        req.user = await User.findById(verified.id).select("-password");
-        // Chamar o próximo middleware
-        next();
-    } catch (err) {
-        // Responder com erro em caso de token inválido
-        res.status(400).json({ errors: ["Token inválido."] });
-    }
-}
+};
 
 module.exports = authGuard;
