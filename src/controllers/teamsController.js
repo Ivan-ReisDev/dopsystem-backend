@@ -27,22 +27,21 @@ const createLogger = async (action, user, name, ip) => {
 
 const updateProfile = async (nickname, team) => {
     const userMember = await User.findOne({ nickname: nickname });
-    console.log(userMember)
-    let newTeams = userMember.teans
+    
+    if (!userMember) {
+        console.error(`User with nickname ${nickname} not found.`);
+        return; // Ou lançar um erro, dependendo de como você quer lidar com isso
+    }
+
+    console.log(userMember);
+
+    let newTeams = userMember.teams || []; // Corrigir a propriedade de teans para teams
     newTeams.push(team);
 
-    userMember.nickname = userMember.nickname;
-    userMember.patent = userMember.patent;
-    userMember.classes = userMember.classes;
-    userMember.teans = newTeams;
-    userMember.status = userMember.status;
-    userMember.tag = userMember.tag;
-    userMember.warnings = userMember.warnings;
-    userMember.medals = userMember.medals;
-    userMember.password = userMember.password;
-    userMember.userType = userMember.userType;
-    await userMember.save();
+    userMember.teams = newTeams;
 
+    // Não é necessário redefinir todas as outras propriedades se não estiverem sendo alteradas
+    await userMember.save();
 }
 
 const serviceControllerTeams = {
@@ -228,6 +227,7 @@ const serviceControllerTeams = {
     createTeams: async (req, res) => {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+            console.log(req.body);
             const { idUser, nameTeams, leader, viceLeader } = req.body;
 
             if (!nameTeams || !leader || !viceLeader) {
@@ -242,6 +242,11 @@ const serviceControllerTeams = {
             const nicknameLeader = await User.findOne({ nickname: leader });
             if (!nicknameLeader) {
                 return res.status(422).json({ error: 'Ops! Esse líder não existe em nossos sistemas.' })
+            }
+
+            const nicknameViceLeader = await User.findOne({ nickname: viceLeader });
+            if (!nicknameViceLeader) {
+                return res.status(422).json({ error: 'Ops! Esse vice-líder não existe em nossos sistemas.' })
             }
 
             const nameTeam = await Teams.findOne({ nameTeams: nameTeams });
@@ -259,10 +264,8 @@ const serviceControllerTeams = {
                 office: "Vice Líder"
             }
             
-            
-
-            updateProfile(nicknameLeader.nickname, nameTeams);
-            updateProfile(viceLeader, nameTeams);
+            await updateProfile(nicknameLeader.nickname, nameTeams);
+            await updateProfile(viceLeader, nameTeams);
 
             const newTeams = {
                 nameTeams: nameTeams,
@@ -285,7 +288,7 @@ const serviceControllerTeams = {
                 return res.status(422).json({ error: 'Ops! Parece que houve um erro, tente novamente mais tarde.' })
             }
 
-            res.status(201).json({ msg: 'Equipe criada com sucesso.' })
+           return res.status(201).json({ msg: 'Equipe criada com sucesso.' })
 
         } catch (error) {
             console.error('Erro ao registrar', error);
@@ -361,21 +364,21 @@ const serviceControllerTeams = {
             const deleteTeam = await Teams.findById(teamsId)
 
             if (!deleteTeam) {
-                return res.status(404).json({ msg: 'Ops! Equipe ou órgão não encontrado' });
+                return res.status(404).json({ error: 'Ops! Equipe ou órgão não encontrado' });
             }
             if (admin && admin.userType !== "Admin") {
-                return res.status(404).json({ msg: 'Ops! Parece que você não é uma administrador.' });
+                return res.status(404).json({ error: 'Ops! Parece que você não é uma administrador.' });
             }
 
             if (admin && admin.userType === "Admin" && deleteTeam) {
                 await Teams.findByIdAndDelete(deleteTeam._id);
                 createLogger("Excluiu a equipe de", admin.nickname, deleteTeam.nameTeams, ipAddress)
-                return res.status(200).json({ msg: 'Equipe deletada com sucesso.' });
+                return res.status(200).json({ error: 'Equipe deletada com sucesso.' });
             }
 
         } catch (error) {
             console.error('Não foi possível deletar a equipe', error);
-            res.status(500).json({ msg: 'Não foi possível deletar a equipe' })
+            res.status(500).json({ error: 'Não foi possível deletar a equipe' })
         }
     },
 

@@ -143,6 +143,34 @@ const serviceControllerClasse = {
     }
   },
 
+
+  deleteClasse: async (req, res) => {
+    try {
+        const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        const { idUser, idClass } = req.body;
+        const admin = await User.findById(idUser);
+        const deleteClasse = await Classes.findById(idClass)
+
+        if (!deleteClasse) {
+            return res.status(404).json({ error: 'Ops! Essa aula não foi encontrada' });
+        }
+        if (admin && admin.userType !== "Admin") {
+            return res.status(404).json({ error: 'Ops! Parece que você não é uma administrador.' });
+        }
+
+        if (admin && admin.userType === "Admin" && deleteClasse) {
+            await Classes.findByIdAndDelete(deleteClasse._id);
+            createLogger("Excluiu a aula ", admin.nickname, deleteClasse.nameClasse, ipAddress)
+            return res.status(200).json({ msg: 'Aula deletada com sucesso.' });
+        }
+
+    } catch (error) {
+        console.error('Não foi possível deletar essa aula', error);
+        return res.status(500).json({ error: 'Não foi possível deletar essa aula' })
+    }
+},
+
+
   postClasse: async (req, res) => {
     try {
       const { idUser, promoted, reason, classe, team } = req.body;

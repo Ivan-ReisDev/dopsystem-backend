@@ -19,7 +19,6 @@ router.route('/login').post((req, res) => serviceControllerUser.login(req, res))
 router.route('/users/update').put((req, res) => serviceControllerUser.updateUser(req, res))
 
 // Rotas privadas 
-
 router.route('/logout').get(authGuard(['Admin', 'Diretor', 'User']), getcurrentUser, (req, res) => serviceControllerUser.logoutPass(req, res))
 router.route('/all/users').get(authGuard(['Admin', 'Diretor', 'User']), (req, res) => serviceControllerUser.getAll(req, res))
 router.route('/user/delete/:userId').delete(authGuard(['Admin']), getcurrentUser,(req, res) => serviceControllerUser.deleteUsers(req, res))
@@ -60,6 +59,7 @@ router.route('/search/requeriments/promoteds').get(authGuard(['Admin', 'Diretor'
 
 //classes 
 router.route('/create/classe').post(authGuard(['Admin']),(req, res) => serviceControllerClasse.createClasse(req, res));
+router.route('/delete/classe').delete(authGuard(['Admin']),(req, res) => serviceControllerClasse.deleteClasse(req, res));
 router.route('/create/classe/requirement').post(authGuard(['Admin', 'Diretor', 'User']),(req, res) => serviceControllerClasse.postClasse(req, res));
 router.route('/create/ci/requirement').post(authGuard(['Admin', 'Diretor', 'User']),(req, res) => serviceControllerClasse.postCI(req, res));
 router.route('/update/classe').put(authGuard(['Admin']),(req, res) => serviceControllerClasse.updateClasse(req, res));
