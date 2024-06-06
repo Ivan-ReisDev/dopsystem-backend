@@ -69,6 +69,24 @@ const register = async (nick) => {
   }
 }
 
+const updateProfileClasse = async (id, classe) => {
+    const student = await User.findById(id);
+    let newClasse = student.classes ;
+    newClasse.push(classe);
+    student.nickname = student.nickname;
+    student.classes = newClasse;
+    student.teans = student.teans;
+    student.patent = student.patent
+    student.status = student.status;
+    student.tag =  student.tag;
+    student.warnings = student.warnings;
+    student.medals = student.medals;
+    student.password = student.password;
+    student.userType = student.userType;
+    student.save()
+  
+}
+
 
 // const createClasseTeamUpdate = async (team, classes) => {
 //   try {
@@ -181,12 +199,14 @@ const serviceControllerClasse = {
       const membersTeam = teamDb.members.some(member => member.nickname === nicknameDocente.nickname);
 
       if (!idUser || !promoted || !reason || !classe || !team) {
-        return res.status(404).json({ msg: 'Por favor preencha todos os campos solicitados' });
+        return res.status(404).json({ error: 'Por favor preencha todos os campos solicitados' });
 
       } else if (!nicknameDocente || !nicknameStudant || !classeDb || !teamDb) {
-        return res.status(400).json({ msg: 'Dados não encontrados, por favor tente mais tarde' });
+        return res.status(400).json({ error: 'Dados não encontrados, por favor tente mais tarde' });
 
       } else if (nicknameDocente.userType === "Admin" || nicknameDocente.userType === "Diretor" || membersTeam || nicknameDocente.nickname === teamDb.leader || nicknameDocente.nickname === teamDb.viceLeader) {
+
+        await updateProfileClasse(nicknameStudant._id, classeDb.nameClasse)
 
         const newRequirement = {
           promoted: nicknameStudant.nickname,

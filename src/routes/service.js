@@ -56,7 +56,6 @@ router.route('/post/requeriments/sales').post(authGuard(['Admin', 'Diretor', 'Us
 router.route('/put/requirement/resignation').put( authGuard(['Admin', 'Diretor', 'User']),(req, res) => serviceControllerRequirements.ResignationUpdateUser(req, res))
 router.route('/search/requeriments/promoteds').get(authGuard(['Admin', 'Diretor', 'User']),(req, res) => serviceControllerRequirements.getAllRequirementsPromoteds(req, res))
 
-
 //classes 
 router.route('/create/classe').post(authGuard(['Admin']),(req, res) => serviceControllerClasse.createClasse(req, res));
 router.route('/delete/classe').delete(authGuard(['Admin']),(req, res) => serviceControllerClasse.deleteClasse(req, res));

@@ -35,10 +35,10 @@ const updateProfile = async (nickname, team) => {
 
     console.log(userMember);
 
-    let newTeams = userMember.teams || []; // Corrigir a propriedade de teans para teams
+    let newTeams = userMember.teans || []; // Corrigir a propriedade de teans para teams
     newTeams.push(team);
 
-    userMember.teams = newTeams;
+    userMember.teans = newTeams;
 
     // Não é necessário redefinir todas as outras propriedades se não estiverem sendo alteradas
     await userMember.save();
@@ -229,88 +229,76 @@ const serviceControllerTeams = {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
             console.log(req.body);
             const { idUser, nameTeams, leader, viceLeader } = req.body;
-
+    
             if (!nameTeams || !leader || !viceLeader) {
-                return res.status(422).json({ error: 'Preencha todos os campos' })
+                return res.status(422).json({ error: 'Preencha todos os campos' });
             }
-
+    
             const nickname = await User.findOne({ _id: idUser });
-            if (nickname && nickname.userType !== "Admin") {
-                return res.status(422).json({ error: 'Ops! Você não é um administrador.' })
+            if (!nickname) {
+                return res.status(422).json({ error: 'Usuário não encontrado.' });
             }
-
+            if (nickname.userType !== "Admin") {
+                return res.status(422).json({ error: 'Ops! Você não é um administrador.' });
+            }
+    
             const nicknameLeader = await User.findOne({ nickname: leader });
             if (!nicknameLeader) {
-                return res.status(422).json({ error: 'Ops! Esse líder não existe em nossos sistemas.' })
+                return res.status(422).json({ error: 'Ops! Esse líder não existe em nossos sistemas.' });
             }
-
+    
             const nicknameViceLeader = await User.findOne({ nickname: viceLeader });
             if (!nicknameViceLeader) {
-                return res.status(422).json({ error: 'Ops! Esse vice-líder não existe em nossos sistemas.' })
+                return res.status(422).json({ error: 'Ops! Esse vice-líder não existe em nossos sistemas.' });
             }
-
+    
             const nameTeam = await Teams.findOne({ nameTeams: nameTeams });
             if (nameTeam) {
-                return res.status(422).json({ error: 'Ops! Essa equipe já existe.' })
+                return res.status(422).json({ error: 'Ops! Essa equipe já existe.' });
             }
-
+    
             const membersLeader = {
                 nickname: leader,
                 office: "Líder"
-            }
-
+            };
+    
             const membersViceLeader = {
                 nickname: viceLeader,
                 office: "Vice Líder"
-            }
+            };
             
             await updateProfile(nicknameLeader.nickname, nameTeams);
-            await updateProfile(viceLeader, nameTeams);
-
+            await updateProfile(nicknameViceLeader.nickname, nameTeams);
+    
             const newTeams = {
                 nameTeams: nameTeams,
                 leader: leader,
                 viceLeader: viceLeader,
-                members: [membersLeader, membersViceLeader] ,
-            }
-
+                members: [membersLeader, membersViceLeader],
+            };
+    
             const newLogger = {
                 user: nickname.nickname,
                 ip: ipAddress,
                 loggerType: `Uma nova equipe foi criada com o nome: ${nameTeams}`
-            }
-
+            };
+    
             await Logger.create(newLogger);
-
-            const createTeams = await Teams.create(newTeams)
-
+    
+            const createTeams = await Teams.create(newTeams);
+    
             if (!createTeams) {
-                return res.status(422).json({ error: 'Ops! Parece que houve um erro, tente novamente mais tarde.' })
+                return res.status(422).json({ error: 'Ops! Parece que houve um erro, tente novamente mais tarde.' });
             }
-
-           return res.status(201).json({ msg: 'Equipe criada com sucesso.' })
-
+    
+            return res.status(201).json({ msg: 'Equipe criada com sucesso.' });
+    
         } catch (error) {
             console.error('Erro ao registrar', error);
-            res.status(500).json({ msg: 'Erro ao cadastrar equipe.' })
+            res.status(500).json({ msg: 'Erro ao cadastrar equipe.' });
         }
     },
-    //Função Responsável por mostrar todas as equipes ou filtrar as equipes de acordo com a query
-    searchTeams: async (req, res) => {
-        try {
-            const nameTeams = req.query.nameTeams;
-
-            const teams = await Teams.find().sort({ nameTeams: 1 });
-            const resTeams = nameTeams
-                ? teams.filter(team => team.nameTeams.includes(nameTeams))
-                : teams;
-            return res.json(resTeams);
-        } catch (error) {
-            console.log(error);
-            return res.status(500).json({ error: 'Erro interno do servidor' });
-        }
-    },
-
+    
     getAllTeams: async (req, res) => {
         try {
             const teams = await Teams.find();
@@ -325,35 +313,119 @@ const serviceControllerTeams = {
 
 
     //Função para atualizar a equipe
+    // updateTeams: async (req, res) => {
+    //     try {
+    //         const { idUser, teamsId, nameTeams, leader, viceLeader, members } = req.body;
+    //         const userAdmin = await User.findById(idUser)
+    //         const teamsUpdate = await Teams.findById(teamsId);
+
+    //         if (!teamsUpdate) {
+    //             return res.status(404).json({ msg: 'Ops! Equipe não encontrada.' });
+    //         }
+
+    //         if (userAdmin && userAdmin.userType !== 'Admin') {
+    //             return res.status(404).json({ msg: 'Ops! Parece que você não é uma administrador.' });
+    //         }
+
+    //         teamsUpdate.nameTeams = nameTeams !== "" ? nameTeams : teamsUpdate.nameTeams;
+    //         teamsUpdate.teamsType = teamsUpdate.teamsType;
+    //         teamsUpdate.leader = leader !== "" ? leader : teamsUpdate.leader;
+    //         teamsUpdate.viceLeader = viceLeader !== "" ? viceLeader : teamsUpdate.viceLeader;
+
+
+    //         await teamsUpdate.save()
+    //         res.status(200).json({ msg: 'Equipe atualizada com sucesso!' });
+
+    //     } catch (error) {
+    //         console.error('Ops! Não foi possível atualizar a equipe ou órgão.', error);
+    //         res.status(500).json({ msg: 'Ops! Não foi possível atualizar a equipe ou órgão.' })
+    //     }
+
+    // },
+
     updateTeams: async (req, res) => {
         try {
             const { idUser, teamsId, nameTeams, leader, viceLeader, members } = req.body;
-            const userAdmin = await User.findById(idUser)
+    
+            if (!teamsId || !nameTeams || !leader || !viceLeader) {
+                return res.status(422).json({ error: 'Preencha todos os campos obrigatórios.' });
+            }
+    
+            const userAdmin = await User.findById(idUser);
+            if (!userAdmin) {
+                return res.status(422).json({ error: 'Usuário não encontrado.' });
+            }
+            if (userAdmin.userType !== 'Admin') {
+                return res.status(422).json({ error: 'Ops! Parece que você não é um administrador.' });
+            }
+    
             const teamsUpdate = await Teams.findById(teamsId);
-
             if (!teamsUpdate) {
-                return res.status(404).json({ msg: 'Ops! Equipe não encontrada.' });
+                return res.status(404).json({ error: 'Ops! Equipe não encontrada.' });
             }
-
-            if (userAdmin && userAdmin.userType !== 'Admin') {
-                return res.status(404).json({ msg: 'Ops! Parece que você não é uma administrador.' });
+    
+            const nicknameLeader = await User.findOne({ nickname: leader });
+            if (!nicknameLeader) {
+                return res.status(422).json({ error: 'Ops! Esse líder não existe em nossos sistemas.' });
             }
-
-            teamsUpdate.nameTeams = nameTeams !== "" ? nameTeams : teamsUpdate.nameTeams;
-            teamsUpdate.teamsType = teamsUpdate.teamsType;
-            teamsUpdate.leader = leader !== "" ? leader : teamsUpdate.leader;
-            teamsUpdate.viceLeader = viceLeader !== "" ? viceLeader : teamsUpdate.viceLeader;
-
-
-            await teamsUpdate.save()
+    
+            const nicknameViceLeader = await User.findOne({ nickname: viceLeader });
+            if (!nicknameViceLeader) {
+                return res.status(422).json({ error: 'Ops! Esse vice-líder não existe em nossos sistemas.' });
+            }
+    
+            // Atualizando líder
+            let updated = false;
+            for (let i = 0; i < teamsUpdate.members.length; i++) {
+                if (teamsUpdate.members[i].office === 'Líder') {
+                    teamsUpdate.members[i] = { nickname: nicknameLeader.nickname, office: 'Líder' };
+                    updated = true;
+                    break;
+                }
+            }
+            if (!updated) {
+                teamsUpdate.members.push({ nickname: nicknameLeader.nickname, office: 'Líder' });
+            }
+    
+            // Atualizando vice-líder
+            updated = false;
+            for (let i = 0; i < teamsUpdate.members.length; i++) {
+                if (teamsUpdate.members[i].office === 'Vice Líder') {
+                    teamsUpdate.members[i] = { nickname: nicknameViceLeader.nickname, office: 'Vice Líder' };
+                    updated = true;
+                    break;
+                }
+            }
+            if (!updated) {
+                teamsUpdate.members.push({ nickname: nicknameViceLeader.nickname, office: 'Vice Líder' });
+            }
+            teamsUpdate.leader = nicknameLeader.nickname;
+            teamsUpdate.viceLeader = nicknameViceLeader.nickname
+            teamsUpdate.nameTeams = nameTeams || teamsUpdate.nameTeams;
+    
+            // Atualizando o perfil dos líderes
+            await updateProfile(nicknameLeader.nickname, teamsUpdate.nameTeams);
+            await updateProfile(nicknameViceLeader.nickname, teamsUpdate.nameTeams);
+    
+            await teamsUpdate.save();
+    
+            const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+            const newLogger = {
+                user: userAdmin.nickname,
+                ip: ipAddress,
+                loggerType: `A equipe ${teamsUpdate.nameTeams} foi atualizada.`
+            };
+            await Logger.create(newLogger);
+    
             res.status(200).json({ msg: 'Equipe atualizada com sucesso!' });
-
+    
         } catch (error) {
             console.error('Ops! Não foi possível atualizar a equipe ou órgão.', error);
-            res.status(500).json({ msg: 'Ops! Não foi possível atualizar a equipe ou órgão.' })
+            res.status(500).json({ msg: 'Ops! Não foi possível atualizar a equipe ou órgão.' });
         }
-
     },
+    
+    
 
     //Função responsável por deletar uma equipe de acordo com o id params dela.
     deleteTeams: async (req, res) => {
