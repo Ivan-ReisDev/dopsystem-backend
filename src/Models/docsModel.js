@@ -4,34 +4,30 @@ const DocsSystemSchema = new mongoose.Schema({
 
     nameDocs: {
         type: String,
-        require: true
+        required: true
     },
-
     content: {
         type: String,
-        require: true
+        required: true
     },
-
     create: {
         type: String,
-        require: true
+        required: true
     },
-
     docsType: {
         type: String,
-        require: true
+        required: true
     },
-
     status: {
         type: String,
         enum: ["Ativo", "Desativado"],
         required: true,
     },
-
-
-
-},{ timestamps: true })
-
+    script: {
+        type: Boolean,
+        required: true,
+    }
+}, { timestamps: true });
 
 const DocsSystem = mongoose.model('Docs', DocsSystemSchema);
 module.exports = {

@@ -12,7 +12,7 @@ const GenerateToken = (id) => {
     { id },
     "KS1486735ANFSAN36454BFGSAF45471PKPEKGPSAGK1454EDGG",
     {
-      expiresIn: "1d",
+      expiresIn: "3d",
     }
   );
 };

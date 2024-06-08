@@ -1,7 +1,8 @@
 const { Teams } = require("../Models/teamsModel");
 const { User } = require("../Models/useModel");
 const { DocsSystem } = require("../Models/docsModel");
-const { Logger } = require('../Models/logsModel')
+const { Logger } = require('../Models/logsModel');
+const { Classes } = require("../Models/classesModel")
 const mongoose = require('mongoose');
 
 const createLogger = async (action, user, name, ip) => {
@@ -16,53 +17,78 @@ const createLogger = async (action, user, name, ip) => {
 }
 
 
+
+
+const createClasse = async (classe, team) => {
+    try {
+        const newClasse = {
+          nameClasse: classe,
+          team: team,
+          patent: "Todas"
+        };
+
+        const classeCriada = await Classes.create(newClasse);
+        return classeCriada ? "Aula criada com sucesso." : "Não foi possível criar a aula.";
+
+    } catch (error) {
+        console.error("Erro ao criar aula.", error);
+    }
+}
+
+
+
 const serviceControllerDocs = {
     //Função responsável por criar a equioe
     createDocs: async (req, res) => {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-            const { idUser, nameDocs, content, docsType } = req.body;
+            const { idUser, nameDocs, content, docsType, script } = req.body;
+            console.log(`idUser ${idUser} , nameDocs ${nameDocs}, content ${content}, docsType ${docsType}, script ${script}`)
             const nickname = await User.findOne({ _id: idUser });
             const teams = await Teams.findOne({ nameTeams: docsType });
-
+    
             if (!nameDocs || !content || content === "<p><br></p>" || !docsType) {
-                return res.status(422).json({ error: 'Preencha todos os campos' });
+                return res.status(422).json({ error: 'Ops! Parece que você não preencheu todos os dados' });
             }
-
+    
+            if(script === true) {
+                await createClasse(nameDocs, docsType)
+            }
+    
             if (nickname && (nickname.userType === "Admin" || nickname.nickname === teams.leader || nickname.userType === "Diretor")) {
                 const newDoc = {
                     nameDocs: nameDocs,
                     content: content,
                     create: nickname.nickname,
                     docsType: docsType,
-                    status: "Ativo"
+                    status: "Ativo",
+                    script,
                 };
-
+    
                 const newLogger = {
                     user: nickname.nickname,
                     ip: ipAddress,
                     loggerType: `Um novo documento foi criado com o nome: ${nameDocs}`
                 };
-
+    
                 await Logger.create(newLogger);
-
-                const createDocs = await DocsSystem.create(newDoc);
-
-                if (!createDocs) {
+    
+                const docCriado = await DocsSystem.create(newDoc);
+    
+                if (!docCriado) {
                     return res.status(422).json({ error: 'Ops! Parece que houve um erro, tente novamente mais tarde.' });
                 }
-
+    
                 return res.status(201).json({ msg: 'Documento criado com sucesso.' });
             }
-
+    
             return res.status(422).json({ error: 'Ops! Parece que você não tem permissão para postar essa aula.' });
-
+    
         } catch (error) {
             console.error('Erro ao registrar', error);
             return res.status(500).json({ msg: 'Erro ao criar documento.' });
         }
     },
-
 
     getAllDocs: async (req, res) => {
         try {
@@ -97,11 +123,11 @@ const serviceControllerDocs = {
     updateDocs: async (req, res) => {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-            const { idUser, nameDocs, content, docsType, idDoc } = req.body;
+            const { idUser, nameDocs, content, docsType, idDoc, script } = req.body;
 
             // Validação do ID do documento
             if (!mongoose.Types.ObjectId.isValid(idDoc)) {
-                return res.status(400).json({ msg: 'ID do documento inválido.' });
+                return res.status(400).json({ error: 'ID do documento inválido.' });
             }
 
             const userAdmin = await User.findById(idUser);
@@ -109,23 +135,28 @@ const serviceControllerDocs = {
             const teams = await Teams.findOne({ nameTeams: docsType });
             if (!docUpdate) {
         
-                return res.status(404).json({ msg: 'Ops! Documento não encontrado.' });
+                return res.status(404).json({ error: 'Ops! Documento não encontrado.' });
             }
 
             if (userAdmin && (userAdmin.userType === "Admin" || userAdmin.nickname === teams.leader || userAdmin.userType === "Diretor")) {
 
+                if(script === true) {
+                    await createClasse(nameDocs, docsType)
+                }
                 docUpdate.nameDocs = nameDocs ? nameDocs : docUpdate.nameDocs;
                 docUpdate.content = content ? content : docUpdate.content;
                 docUpdate.docsType = docsType ? docsType : docUpdate.docsType;
+                docUpdate.script = script ? script : script.docsType;
+                
 
                 await docUpdate.save();
                 createLogger("Editou o documento", userAdmin.nickname, docUpdate.nameDocs, ipAddress)
                 return res.status(200).json({ msg: 'Documento atualizado com sucesso!' });
             }
-            return res.status(403).json({ msg: 'Ops! Parece que você não é um administrador.' });
+            return res.status(403).json({ error: 'Ops! Parece que você não é um administrador.' });
         } catch (error) {
             console.error('Ops! Não foi possível atualizar o documento.', error);
-            res.status(500).json({ msg: 'Ops! Não foi possível atualizar o documento.' });
+            res.status(500).json({ error: 'Ops! Não foi possível atualizar o documento.' });
         }
     },
 
