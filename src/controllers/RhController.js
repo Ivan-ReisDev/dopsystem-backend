@@ -19,7 +19,7 @@ const serviceControllerRh = {
 
       const membersTeam = team.members.some(member => member.nickname === nicknameOperator.nickname);
 
-      if (nicknameOperator && (nicknameOperator.userType === "Admin" || nicknameOperator.userType === "Diretor" || team.leader === nicknameOperator.nickname || membersTeam === true)) {
+      if (nicknameOperator && (nicknameOperator.userType === "Admin" || nicknameOperator.userType === "Recursos Humanos" || nicknameOperator.userType === "Diretor" || team.leader === nicknameOperator.nickname || membersTeam === true)) {
         nickname.nickname = nickname.nickname;
         nickname.patent = statusRequirements === "Aprovado" ? requirement.newPatent : nickname.patent;
         nickname.classes = nickname.classes;
