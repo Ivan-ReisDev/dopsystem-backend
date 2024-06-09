@@ -92,11 +92,19 @@ const serviceControllerDocs = {
 
     getAllDocs: async (req, res) => {
         try {
-            const docs = await DocsSystem.find();
+            // Definindo o número da página padrão como 1 e o tamanho padrão da página como 10, 
+            // mas você pode ajustá-los conforme necessário.
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 10;
+    
+            // Calcular o índice do primeiro documento a ser recuperado com base no número da página e no tamanho da página.
+            const startIndex = (page - 1) * limit;
+    
+            // Consulta os documentos usando o método find() com skip() e limit() para a paginação.
+            const docs = await DocsSystem.find().skip(startIndex).limit(limit);
+    
             res.json(docs);
-
         } catch (error) {
-
             console.error('Documento não encontrado', error);
             res.status(500).json({ msg: 'Documento não encontrado' })
         }

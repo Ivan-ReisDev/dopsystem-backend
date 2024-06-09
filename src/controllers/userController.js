@@ -314,15 +314,25 @@ const serviceControllerUser = {
 
   getAll: async (req, res) => {
     try {
+      // Página padrão é 1 se não for especificada
+      const page = parseInt(req.query.page) || 1;
+      // Tamanho padrão da página é 10 se não for especificado
+      const pageSize = parseInt(req.query.pageSize) || 10;
+  
       // Consulta para obter todos os usuários, excluindo a senha
-      const users = await User.find().select("-password");
+      const users = await User.find()
+        .select("-password")
+        .skip((page - 1) * pageSize) // Pula os registros das páginas anteriores
+        .limit(pageSize); // Limita o número de resultados retornados
+  
       // Envia os usuários sem a senha como resposta
       res.json(users);
     } catch (error) {
-      console.error('Usuário não encontrado', error);
-      res.status(500).json({ msg: 'Usuário não encontrado' });
+      console.error('Erro ao recuperar usuários', error);
+      res.status(500).json({ msg: 'Erro ao recuperar usuários' });
     }
   },
+  
 
   getAllNicks: async (req, res) => {
     try {
