@@ -65,8 +65,8 @@ router.route('/update/classe').put(authGuard(['Admin']),(req, res) => serviceCon
 router.route('/get/classe').get(authGuard(['Admin', 'Diretor', 'User']),(req, res) => serviceControllerClasse.getClasses(req, res));
 
 //Recursos Humanos 
-router.route('/update/status').put(authGuard(['Admin', 'Diretor', 'User']),(req, res) => serviceControllerRh.editRequeriment(req, res));
-router.route('/delete/status').delete(authGuard(['Admin', 'Diretor', 'User']),(req, res) => serviceControllerRh.deleteRequeriments(req, res))
+router.route('/update/status').put(authGuard(['Admin', 'Diretor', 'Recursos Humanos']),(req, res) => serviceControllerRh.editRequeriment(req, res));
+router.route('/delete/status').delete(authGuard(['Admin', 'Diretor', 'Recursos Humanos']),(req, res) => serviceControllerRh.deleteRequeriments(req, res))
 //Loguer 
 router.route('/loggers').get(authGuard(['Admin']),(req, res) => serviceControllerLogger.getAllLogs(req, res))
 
