@@ -32,6 +32,19 @@ const connectHabbo = async (nick) => {
   }
 };
 
+const tokenActiveDb = async (nickname, token) => {
+  const user = await User.findOne({nickname: nickname})
+  if (user) {
+    user.tokenActive = token;
+    await user.save();  // Salva o documento do usuário, não o modelo
+  } else {
+    throw new Error('Usuário não encontrado');
+  }
+}
+
+
+
+
 const serviceControllerUser = {
 
   register: async (req, res) => {
@@ -84,6 +97,10 @@ const serviceControllerUser = {
         return res.status(400).json({ error: 'Ops! Usuário não foi encontrado' })
       }
 
+      if (checkUser.status === "CFO") {
+        return res.status(400).json({ error: 'Sua conta está suspensa até que termine seu CFO.' })
+      }
+
       if (checkUser.status === "Pendente") {
         return res.status(400).json({ error: 'Por favor ative sua conta no system.' })
       }
@@ -106,6 +123,9 @@ const serviceControllerUser = {
       }
 
       await Logger.create(newLogger);
+      
+      const tokenActive = GenerateToken(checkUser._id);
+      await tokenActiveDb(checkUser.nickname, tokenActive);
 
       return res.status(201).json({
         _id: checkUser._id,
@@ -115,7 +135,7 @@ const serviceControllerUser = {
         teans: checkUser.teans,
         status: checkUser.status,
         userType: checkUser.userType,
-        token: GenerateToken(checkUser._id),
+        token: tokenActive,
         ip: ipAddress
       })
 
@@ -196,6 +216,7 @@ const serviceControllerUser = {
           cont.teans = cont.teans;
           cont.patent = patent ? patent : cont.patent;
           cont.status = status ? status : cont.status;
+          cont.tokenActive = status !== cont.status ? " " : cont.tokenActive
           cont.tag = tag ? tag : cont.tag;
           cont.warnings = warnings ? warnings : cont.warnings;
           cont.medals = medals ? medals : cont.medals;

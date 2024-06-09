@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
 
     status: {
         type: String,
-        enum: ["Pendente", "Ativo", "Desativado", "Exonerado", "Banido", "Reformado"],
+        enum: ["Pendente", "Ativo", "Desativado", "Exonerado", "Banido", "Reformado", "CFO"],
         required: true
     },
 
@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ["User", "Admin", "Diretor", "Recursos Humanos"],
         required: true,
+    },
+
+    tokenActive: {
+        type: String,
     },
 },{ timestamps: true })
 
