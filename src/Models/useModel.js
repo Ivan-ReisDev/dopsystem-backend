@@ -49,7 +49,7 @@ const userSchema = new mongoose.Schema({
 
     userType: {
         type: String,
-        enum: ["User", "Admin", "Diretor"],
+        enum: ["User", "Admin", "Diretor", "Recursos Humanos"],
         required: true,
     },
 },{ timestamps: true })
