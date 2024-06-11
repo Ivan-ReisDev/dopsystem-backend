@@ -17,12 +17,12 @@ const serviceControllerPublication = require("../controllers/PublicationControll
 router.route('/register').post((req, res) => serviceControllerUser.register(req, res))
 router.route('/login').post((req, res) => serviceControllerUser.login(req, res))
 router.route('/users/update').put((req, res) => serviceControllerUser.updateUser(req, res))
+router.route('/logout').get(authGuard(['Admin', 'Diretor', 'User']), getcurrentUser, (req, res) => serviceControllerUser.logoutPass(req, res))
 
 // Rotas privadas 
-router.route('/logout').get(authGuard(['Admin', 'Diretor', 'User']), getcurrentUser, (req, res) => serviceControllerUser.logoutPass(req, res))
 router.route('/all/users').get(authGuard(['Admin', 'Diretor', 'User']), (req, res) => serviceControllerUser.getAll(req, res))
 router.route('/user/delete/:userId').delete(authGuard(['Admin']), getcurrentUser,(req, res) => serviceControllerUser.deleteUsers(req, res))
-router.route('/profile').get(authGuard(['Admin', 'Diretor', 'User']), getcurrentUser, (req, res) => serviceControllerUser.getAll(req, res));
+router.route('/profile').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']), getcurrentUser, (req, res) => serviceControllerUser.getAll(req, res));
 router.route('/search').get(authGuard(['Admin', 'Diretor', 'User']),(req, res) => serviceControllerUser.searchUser(req, res));
 router.route('/admin/update').put(authGuard(['Admin']),(req, res) => serviceControllerUser.updateUserAdmin(req, res))
 router.route('/update/tag').put(authGuard(['Admin', 'Diretor', 'User']),(req, res) => serviceControllerUser.createTag(req, res))

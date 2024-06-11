@@ -10,9 +10,9 @@ const apiHabbo = `https://www.habbo.com.br/api/public/users?name=`
 const GenerateToken = (id) => {
   return jwt.sign(
     { id },
-    "KS1486735ANFSAN36454BFGSAF45471PKPEKGPSAGK1454EDGG",
+    process.env.JWT_SECRET,
     {
-      expiresIn: "3d",
+      expiresIn: "7d",
     }
   );
 };
@@ -389,15 +389,15 @@ const serviceControllerUser = {
   logoutPass: async (req, res) => {
     try {
       const user = req.user;
+      console.log("ENTROU AQUI")
       res.logout()
       res.status(200).json(user);
 
     } catch (error) {
       console.log('Ocorreu um Erro.')
     }
-
+ 
   },
-
 
 
 };

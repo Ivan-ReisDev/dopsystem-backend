@@ -16,8 +16,16 @@ const authGuard = (requiredRoles) => {
                 return res.status(401).json({ errors: ["Acesso negado!"] });
             }
 
+            // Log do token para depuração
+            console.log("Token recebido:", token);
+
+            // Verificar se o token tem o formato correto
+            if (token.split('.').length !== 3) {
+                return res.status(400).json({ errors: ["Token malformado."] });
+            }
+
             // Verificar o token usando a chave secreta
-            const verified = jwt.verify(token, 'KS1486735ANFSAN36454BFGSAF45471PKPEKGPSAGK1454EDGG');
+            const verified = jwt.verify(token, process.env.JWT_SECRET);
 
             // Adicionar informações do usuário autenticado à requisição (req)
             req.user = await User.findById(verified.id).select("-password");
