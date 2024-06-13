@@ -199,12 +199,12 @@ const serviceControllerTeams = {
                 userMember.patent = userMember.patent;
                 userMember.classes = userMember.classes;
                 userMember.teans = newArrayAtt;
-                userMember.status = userMember.status;
+                userMember.status =  userMember.status;
                 userMember.tag = userMember.tag;
                 userMember.warnings = userMember.warnings;
                 userMember.medals = userMember.medals;
                 userMember.password = userMember.password;
-                userMember.userType = userMember.userType;
+                userMember.userType = teamUpdate.nameTeams === "Recursos Humanos" ? "Recursos Humanos" : userMember.userType;
 
                 await userMember.save();
                 await teamUpdate.save();
