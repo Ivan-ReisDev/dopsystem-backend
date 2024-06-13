@@ -352,7 +352,7 @@ const serviceControllerUser = {
     try {
       const nickname = req.query.nickname;
       const typeRequeriment = req.query.typeRequeriment;
-      const users = await User.find().sort({ nickname: 1 }).select("-password");
+      const users = await User.findOne().sort({ nickname: 1 }).select("-password");
       const resUser = nickname
         ? users.filter(user => user.nickname.includes(nickname))
         : users;
