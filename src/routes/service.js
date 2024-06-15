@@ -11,7 +11,8 @@ const serviceControllerSystem = require('../controllers/systemController.js');
 const serviceControllerLogger = require('../controllers/logsController.js');
 const serviceControllerClasse = require('../controllers/ClassesController.js')
 const serviceControllerRh = require("../controllers/RhController.js")
-const serviceControllerPublication = require("../controllers/PublicationController.js")
+const serviceControllerPublication = require("../controllers/PublicationController.js");
+const serviceControllerEndorsement = require("../controllers/endorsementController.js");
 
 //Rotas publicas
 router.route('/register').post((req, res) => serviceControllerUser.register(req, res))
@@ -73,4 +74,13 @@ router.route('/loggers').get(authGuard(['Admin']),(req, res) => serviceControlle
 router.route('/create/publication').post(authGuard(['Admin']),(req, res) => serviceControllerPublication.createPublication(req, res));
 router.route('/delete/publication').delete(authGuard(['Admin']),(req, res) => serviceControllerPublication.deletePublications(req, res));
 router.route('/publication').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerPublication.getAllPublications(req, res));
+
+router.route('/endorsement').post(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerEndorsement.createAval(req, res));
+router.route('/endorsement/status').put(authGuard(['Admin', 'Diretor','Recursos Humanos']),(req, res) => serviceControllerEndorsement.editAval(req, res));
+router.route('/endorsement/delete').delete(authGuard(['Admin', 'Diretor']),(req, res) => serviceControllerEndorsement.deleteAval(req, res));
+router.route('/endorsement/').get(authGuard(['Admin', 'Diretor', 'Recursos Humanos']),(req, res) => serviceControllerEndorsement.getAval(req, res));
+
 module.exports = router
+
+
+

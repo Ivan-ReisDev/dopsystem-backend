@@ -1,82 +1,135 @@
 const { Logger } = require('../Models/logsModel');
 const { User } = require('../Models/useModel');
-const { Requirements } = require("../Models/RequirementsModel");
-const { Teams } = require('../Models/teamsModel');
+const { Endorsement } = require('../Models/endorsementModel');
+const moment = require('moment');
 
-const serviceControllerRh = {
+const createLogger = async (action, user, name, ip) => {
+  const newLogger = {
+      user: user,
+      ip: ip,
+      loggerType: `${action} ${name}`
+  }
+
+  await Logger.create(newLogger);
+}
+
+const serviceControllerEndorsement = {
   //Função para aprovar ou reprovar requerimentos:
-  editRequeriment: async (req, res) => {
+  createAval: async (req, res) => {
     try {
-      const { idUser, idRequirements, statusRequirements } = req.body;
+      const { idUser, nicknameAval, initialDate, reason, endorsementdays } = req.body;
       const nicknameOperator = await User.findOne({ _id: idUser });
-      const requirement = await Requirements.findById(idRequirements);
-      const nickname = await User.findOne({ nickname: requirement.promoted });
-      const team = await Teams.findOne({ nameTeams: "Recursos Humanos" })
-
+      const nickname = await User.findOne({ nickname: nicknameAval });
       if (!nickname || !nicknameOperator) {
-        res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
+        return res.status(404).json({ error: 'Usuário não encontrado com o nickname fornecido.' });
+      }
+  
+      const startDate = moment(initialDate, 'YYYY-MM-DD');
+      const endDate = startDate.clone().add(endorsementdays, 'days');
+  
+      const formattedStartDate = startDate.format('DD/MM/YYYY');
+      const formattedEndDate = endDate.format('DD/MM/YYYY');
+
+      const newEndorsement = {
+        nicknameAval: nickname.nickname,
+        reason: reason,
+        startDate: formattedStartDate,
+        endDate: formattedEndDate,
+        endorsementdays,
+        status: "Pendente"
+      };
+
+      const sucesso = await Endorsement.create(newEndorsement);
+      if (sucesso) {
+        return res.status(200).json({ msg: "Aval criado com sucesso." });
       }
 
-      const membersTeam = team.members.some(member => member.nickname === nicknameOperator.nickname);
+      // Aqui pode ser o problema, pois você está tentando enviar duas respostas
+      // Dependendo de como está configurado o seu model Endorsement, sucesso pode não ser uma condição confiável
 
-      if (nicknameOperator && (nicknameOperator.userType === "Admin" || nicknameOperator.userType === "Diretor" || team.leader === nicknameOperator.nickname || membersTeam === true)) {
-        nickname.nickname = nickname.nickname;
-        nickname.patent = statusRequirements === "Aprovado" ? requirement.newPatent : nickname.patent;
-        nickname.classes = nickname.classes;
-        nickname.teans = nickname.teans;
-        nickname.status = nickname.status;
-        nickname.tag = nickname.tag;
-        nickname.warnings = requirement.typeRequirement === "Advertência" ? nickname.warnings = 1 : nickname.warnings;
-        nickname.medals = nickname.medals;
-        nickname.password = nickname.password;
-        nickname.userType = nickname.userType;
-
-        requirement.promoted
-        requirement.newPatent
-        requirement.patentOperador
-        requirement.operator
-        requirement.reason
-        requirement.typeRequirement
-        requirement.status = statusRequirements
-        await nickname.save();
-        await requirement.save();
-        return res.status(200).json({ msg: `Requerimento ${statusRequirements} com sucesso.` });
-
-      }
-
-     return res.status(404).json({ msg: 'Ops! Parece que você não tem permissão para editar esse documento.' });
-
+      return res.status(500).json({ error: "Erro desconhecido." }); 
     } catch (error) {
-      console.error('Não foi possível atualizar o requerimento.', error);
-      res.status(500).json({ msg: 'Não foi possível atualizar o requerimento' })
+      console.error('Não foi possível criar a avaliação.', error);
+      return res.status(500).json({ msg: 'Não foi possível criar a avaliação.' });
     }
-
   },
 
-  deleteRequeriments: async (req, res) => {
+  editAval: async (req, res) => {
     try {
-      const { idUser, idRequirements } = req.body;
-      const admin = await User.findOne({ _id: idUser });
-      const deleteRequeriment = await Requirements.findOne({ _id: idRequirements })
-      if (!deleteRequeriment) {
-        return res.status(404).json({ error: 'Requerimento não encontrado não encontrado' });
+      const { idUser, idAval, statusAval } = req.body;
+      const nicknameOperator = await User.findOne({ _id: idUser });
+      const aval = await Endorsement.findOne({_id: idAval})
+
+      if (!nicknameOperator) {
+        res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
+      } 
+      
+      if(!aval) {
+        res.status(404).json({ msg: 'Ops! Aval não encontrado.' });
+      } 
+      
+        if (nicknameOperator && (nicknameOperator.userType === "Admin" || nicknameOperator.userType === "Recursos Humanos" || nicknameOperator.userType === "Diretor")) {
+          aval.nicknameAval = aval.nicknameAval;
+          aval.startDate = aval.startDate;
+          aval.endorsementdays = aval.endorsementdays;
+          aval.endDate = aval.endDate;
+          aval.reason = aval.reason;
+          aval.status = statusAval === "Aprovado" ? statusAval : "Reprovado";
+          await aval.save();
+          return res.status(200).json({ msg: `Aval ${statusAval} com sucesso.` });
       }
 
-      if (admin && (admin.userType === "Admin" || admin.userType === "Diretor" ) ) {
-        await Requirements.findByIdAndDelete(idRequirements);
-        return res.status(200).json({ msg: 'Requerimento deletedo com sucesso' });
-      }
-
-      return res.status(404).json({ error: 'Ops! Você não tem permissão para excluir esse requerimento.' })
+      return res.status(404).json({ msg: 'Ops! Parece que você não tem permissão para editar esse documento.' });
 
     } catch (error) {
-      console.error('Não foi possível deletar o requerimento', error);
-      res.status(500).json({ error: 'Não foi possível deletar o requerimento' })
+      console.error('Não foi possível atualizar o aval.', error);
+      res.status(500).json({ error: 'Não foi possível atualizar o aval.' })
     }
 
   },
 
+  deleteAval: async (req, res) => {
+    try {
+      const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+      const { idUser, idAval } = req.body;
+      const admin = await User.findOne({ _id: idUser });
+      const aval = await Endorsement.findOne({ _id: idAval })
+      if (!aval) {
+        return res.status(404).json({ error: 'Aval não encontrado' });
+      }
+
+      if (admin && (admin.userType === "Admin" || admin.userType === "Diretor" )){
+        await Endorsement.findByIdAndDelete(idAval);
+        return res.status(200).json({ msg: 'Aval deletado com sucesso' });
+      }
+
+      await createLogger("Acabou de deletar um", admin.nickname, "Aval", ipAddress)
+      return res.status(404).json({ error: 'Ops! Você não tem permissão para excluir esse Aval.' })
+
+    } catch (error) {
+      console.error('Não foi possível deletar o aval', error);
+      res.status(500).json({ error: 'Não foi possível deletar a publicação' })
+    }
+
+  },
+
+  getAval: async (req, res) => {
+    try {
+      // Busca todos os registros de Endorsement do banco de dados, ordenando por data de forma decrescente
+      const avais = await Endorsement.find().sort({ createdAt: -1 });
+  
+      // Retorna os dados ordenados por data decrescente
+      return res.json(avais);
+  
+    } catch (error) {
+      // Trata erros de forma apropriada
+      console.error('Erro ao obter avaliações', error);
+      res.status(500).json({ error: 'Erro ao obter avaliações' });
+    }
+  }
+  
+  
 
 };
 
-module.exports = serviceControllerRh;
+module.exports = serviceControllerEndorsement;
