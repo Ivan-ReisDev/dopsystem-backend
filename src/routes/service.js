@@ -56,6 +56,7 @@ router.route('/post/requeriments/contract').post(authGuard(['Admin', 'Diretor', 
 router.route('/post/requeriments/sales').post(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerRequirements.createSales(req, res))
 router.route('/put/requirement/resignation').put( authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerRequirements.ResignationUpdateUser(req, res))
 router.route('/search/requeriments/promoteds').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerRequirements.getAllRequirementsPromoteds(req, res))
+router.route('/search/requeriments/teams').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerRequirements.getAllRequirementsTeams(req, res))
 
 //classes 
 router.route('/create/classe').post(authGuard(['Admin']),(req, res) => serviceControllerClasse.createClasse(req, res));

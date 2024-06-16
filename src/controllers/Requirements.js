@@ -425,6 +425,40 @@ const serviceControllerRequirements = {
         }
     },
 
+    getAllRequirementsTeams: async (req, res) => {
+        try {
+            const teamRequirement = req.query.teamRequirement;
+            const page = parseInt(req.query.page) || 1; // Página atual (padrão: 1)
+            const limit = parseInt(req.query.limit) || 10; // Limite de itens por página (padrão: 10)
+            const skip = (page - 1) * limit; // Quantidade de itens a pular
+    
+            // Encontrar e paginar os requisitos
+            const requirements = await Requirements.find({ team: teamRequirement })
+                .sort({ _id: -1 }) // Ordenar em ordem decrescente pelo campo _id
+                .skip(skip)
+                .limit(limit);
+    
+            // Obter o total de requisitos para a equipe
+            const totalRequirements = await Requirements.countDocuments({ team: teamRequirement });
+    
+            // Calcular o total de páginas
+            const totalPages = Math.ceil(totalRequirements / limit);
+    
+            // Enviar a resposta paginada
+            return res.json({
+                requirements,
+                currentPage: page,
+                totalPages: totalPages,
+                totalRequirements: totalRequirements
+            });
+    
+        } catch (error) {
+            console.error('Erro ao obter os requisitos:', error);
+            res.status(500).json({ msg: 'Erro ao obter os requisitos' });
+        }
+    },
+    
+
     searchRequeriments: async (req, res) => {
         try {
             const nameRequeriment = req.query.promoted;
