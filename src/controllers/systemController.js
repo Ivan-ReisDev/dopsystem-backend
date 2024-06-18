@@ -48,7 +48,35 @@ const serviceControllerSystem = {
           res.status(500).json({ msg: 'Informações não encontradas' })
         }
       },
-    
-};
+
+      searchUserPatent: async (req, res) => {
+        try {
+          const { patent, nickname } = req.query; // Extrair patent e nickname de req.query
+          const systemDb = await InfoSystem.find();
+          const selectInfo = systemDb[0];
+      
+          if (selectInfo.patents.includes(patent) || selectInfo.paidPositions.includes(patent)) {
+            let users = await User.find({ patent: patent,
+                $or: [
+                    { status: "Ativo" },
+                    { status: "Pendente" } // Substitua "OutroStatus" pelo outro status que deseja incluir
+                  ]
+             });
+      
+            if (nickname) {
+              users = users.filter(user => user.nickname.includes(nickname));
+            }
+      
+            return res.json(users);
+          }
+      
+          return res.status(401).json({ error: 'Patente não encontrada' });
+      
+        } catch (error) {
+          console.log(error);
+          return res.status(500).json({ error: 'Erro interno do servidor' });
+        }
+      },
+    }
 
 module.exports = serviceControllerSystem;
