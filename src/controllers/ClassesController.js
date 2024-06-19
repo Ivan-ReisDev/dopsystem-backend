@@ -1,73 +1,12 @@
 const { User } = require("../Models/useModel.js");
 const { Logger } = require('../Models/logsModel')
-const { InfoSystem } = require('../Models/systemModel.js');
 const { Classes } = require('../Models/classesModel.js')
 const { Requirements } = require("../Models/RequirementsModel");
 const { Teams } = require("../Models/teamsModel");
-const bcrypt = require("bcryptjs");
 const mongoose = require('mongoose');
+const { createLogger, register, RegisterContExist, connectHabbo } = require('../utils/UserUtils.js')
 
-const createLogger = async (action, user, name, ip) => {
-  const newLogger = {
-    user: user,
-    ip: ip,
-    loggerType: `${action} ${name}`
-  }
 
-  await Logger.create(newLogger);
-}
-
-const register = async (nick) => {
-  try {
-    const passwordConf = `${process.env.USER_PASS_REGISTER}` 
-    const nickname = await User.findOne({ nickname: nick });
-
-    if (nickname && (nickname.status === "Exonerado" || nickname.status === "Banido")) {
-      return {
-        info: "Ops! Este usuário encontra-se banido ou exonerado.",
-        status: false 
-      };
-    } else if (nickname && (nickname.status === "Ativo" || nickname.status === "Pendente") ) {
-      return {
-        info: "Ops! Este usuário encontra-se no quadro de funcionários da DOP",
-        status: false 
-      };
-    } else {
-      const saltHash = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(passwordConf, saltHash);
-  
-      const newUser = {
-        nickname: nick,
-        password: passwordHash,
-        patent: "Soldado",
-        classes: "Curso Inicial [C.I]",
-        teans: 'System',
-        status: 'Pendente',
-        tag: 'Vazio',
-        warnings: 0,
-        medals: 0,
-        userType: 'User',
-      };
-  
-      const createUser = await User.create(newUser);
-      return createUser
-        ? {
-          info: "Usuário cadastrado com sucesso.",
-          status: true 
-        }
-        : {
-          info: "Houve um erro, tente novamente mais tarde",
-          status: false 
-        };
-    }
-  } catch (error) {
-    console.error("Erro ao registrar", error);
-    return {
-      info: "Erro ao efetuar cadastro",
-      status: false
-    };
-  }
-}
 
 const updateProfileClasse = async (id, classe) => {
     const student = await User.findById(id);
@@ -117,8 +56,6 @@ const updateProfileClasse = async (id, classe) => {
 // }
 
 const serviceControllerClasse = {
-
-
   //student, teacher, nameClasse, team, comments
   createClasse: async (req, res) => {
     try {
@@ -145,7 +82,7 @@ const serviceControllerClasse = {
         };
 
         const createClasse = await Classes.create(newClasse);
-        createLogger("Criou uma nova aula", userAdmin.nickname, nameClasse, ipAddress);
+        await createLogger("Criou uma nova aula", userAdmin.nickname, nameClasse, ipAddress);
         return !createClasse
           ? res.status(422).json({ error: "Houve um erro, tente novamente mais tarde" })
           : res.status(201).json({ msg: "Aula criada com sucesso." });
@@ -160,7 +97,6 @@ const serviceControllerClasse = {
       res.status(500).json({ msg: "Erro ao criar aula." });
     }
   },
-
 
   deleteClasse: async (req, res) => {
     try {
@@ -178,7 +114,7 @@ const serviceControllerClasse = {
 
         if (admin && admin.userType === "Admin" && deleteClasse) {
             await Classes.findByIdAndDelete(deleteClasse._id);
-            createLogger("Excluiu a aula ", admin.nickname, deleteClasse.nameClasse, ipAddress)
+            await createLogger("Excluiu a aula ", admin.nickname, deleteClasse.nameClasse, ipAddress)
             return res.status(200).json({ msg: 'Aula deletada com sucesso.' });
         }
 
@@ -187,7 +123,6 @@ const serviceControllerClasse = {
         return res.status(500).json({ error: 'Não foi possível deletar essa aula' })
     }
 },
-
 
   postClasse: async (req, res) => {
     try {
@@ -217,6 +152,7 @@ const serviceControllerClasse = {
           typeRequirement: "Aula",
           status: "Aprovado"
         };
+
         const createRequirement = await Requirements.create(newRequirement);
 
         if (!createRequirement) {
@@ -239,48 +175,58 @@ const serviceControllerClasse = {
 
   postCI: async (req, res) => {
     try {
-      const { idUser, student, reason, } = req.body;
-      const registrered = await register(student);
-
-      if (registrered.status === false ) {
-        return res.status(422).json({ error: registrered.info });
-
-      } 
+      const { idUser, student, reason } = req.body;
       const nicknameDocente = await User.findOne({ _id: idUser });
-
+      const nicknameUser = await User.findOne({ nickname: student });
+  
       if (!idUser || !reason || !student) {
-        return res.status(404).json({ msg: 'Por favor preencha todos os campos solicitados' });
+        return res.status(404).json({ error: 'Por favor preencha todos os campos solicitados' });
+      }
 
-      }  if (!nicknameDocente) {
-        return res.status(400).json({ msg: 'Dados não encontrados, por favor tente mais tarde' });
-
-      } 
-
-        const newRequirement = {
-          promoted: student,
-          classe: "Curso Inicial [C.I]",
-          reason,
-          operator: nicknameDocente.nickname,
-          team: 'Corpo de Funcionários',
-          typeRequirement: "Aula",
-          status: "Aprovado"
-        };
-
-        const createRequirement = await Requirements.create(newRequirement);
-        if (!createRequirement) {
-          return res.status(422).json({ error: 'Ops! Parece que houve um erro, tente novamente mais tarde.' });
+      const responseHabbo = await connectHabbo(student.trim());
+      if(responseHabbo === "error") {
+        return res.status(404).json({ error: 'Este usuário não existe no Habbo Hotel' });
+      }
+  
+      if (!nicknameDocente) {
+        return res.status(400).json({ error: 'Dados não encontrados, por favor tente mais tarde' });
+      }
+  
+      if (nicknameUser) {
+        const response = await RegisterContExist(nicknameUser.nickname, "Soldado", "Curso Inicial [C.I]");
+  
+        if (response.status === false) {
+          return res.status(400).json({ error: response.info });
         }
-
-        return res.status(201).json({ msg: 'Requerimento postado com sucesso.' });
-
+      } else {
+        const registrered = await register(student.trim(), "Soldado");
+        if (registrered.status === false) {
+          return res.status(422).json({ error: registrered.info });
+        }
+      }
+  
+      const newRequirement = {
+        promoted: student,
+        classe: "Curso Inicial [C.I]",
+        reason,
+        operator: nicknameDocente.nickname,
+        team: 'Corpo de Funcionários',
+        typeRequirement: "Aula",
+        status: "Aprovado"
+      };
+  
+      const createRequirement = await Requirements.create(newRequirement);
+      if (!createRequirement) {
+        return res.status(422).json({ error: 'Ops! Parece que houve um erro, tente novamente mais tarde.' });
+      }
+  
+      return res.status(201).json({ msg: 'Requerimento postado com sucesso.' });
     } catch (error) {
       console.error('Erro ao postar requerimento.', error);
-      res.status(500).json({ msg: 'Erro ao postar requerimento.' });
+      res.status(500).json({ error: 'Erro ao postar requerimento.' });
     }
   },
   
-
-
   updateClasse: async (req, res) => {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -304,7 +250,7 @@ const serviceControllerClasse = {
       }
 
       if (userAdmin.userType === 'Admin' || (teamUpdate.leader === userAdmin.nickname)) {
-        createLogger("Editou o aula", userAdmin.nickname, classeUpdate.team, ipAddress);
+        await createLogger("Editou o aula", userAdmin.nickname, classeUpdate.team, ipAddress);
         classeUpdate.nameClasse = nameClasse || classeUpdate.nameClasse;
         classeUpdate.team = team || classeUpdate.team;
         classeUpdate.patent = patent || classeUpdate.patent;
@@ -319,6 +265,7 @@ const serviceControllerClasse = {
       res.status(500).json({ msg: 'Ops! Não foi possível atualizar essa aula.' });
     }
   },
+
 
   getClasses: async (req, res) => {
     try {

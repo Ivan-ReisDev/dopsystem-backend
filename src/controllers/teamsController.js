@@ -1,6 +1,6 @@
 const { Teams } = require("../Models/teamsModel");
 const { User } = require("../Models/useModel");
-const { Logger } = require('../Models/logsModel');
+const { createLogger } = require('../utils/UserUtils');
 const { Requirements } = require("../Models/RequirementsModel");
 const mongoose = require('mongoose');
 
@@ -14,16 +14,7 @@ function dataSeisDiasAtras() {
     return dataFormatada;
 }
 
-const createLogger = async (action, user, name, ip) => {
-    const newLogger = {
-        user: user,
-        ip: ip,
-        loggerType: `${action} ${name}`
-    }
 
-    await Logger.create(newLogger);
-
-}
 
 const updateProfile = async (nickname, team) => {
     const userMember = await User.findOne({ nickname: nickname });
@@ -276,14 +267,9 @@ const serviceControllerTeams = {
                 viceLeader: viceLeader,
                 members: [membersLeader, membersViceLeader],
             };
+
+           await createLogger(`Uma nova equipe foi criada com o nome: ${nameTeams}`, nickname.nickname, " ", ipAddress);
     
-            const newLogger = {
-                user: nickname.nickname,
-                ip: ipAddress,
-                loggerType: `Uma nova equipe foi criada com o nome: ${nameTeams}`
-            };
-    
-            await Logger.create(newLogger);
     
             const createTeams = await Teams.create(newTeams);
     
@@ -410,13 +396,10 @@ const serviceControllerTeams = {
             await teamsUpdate.save();
     
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-            const newLogger = {
-                user: userAdmin.nickname,
-                ip: ipAddress,
-                loggerType: `A equipe ${teamsUpdate.nameTeams} foi atualizada.`
-            };
-            await Logger.create(newLogger);
-    
+
+            await createLogger(`A equipe ${teamsUpdate.nameTeams} foi atualizada.`, userAdmin.nickname, " ", ipAddress);
+  
+
             res.status(200).json({ msg: 'Equipe atualizada com sucesso!' });
     
         } catch (error) {
@@ -425,8 +408,6 @@ const serviceControllerTeams = {
         }
     },
     
-    
-
     //Função responsável por deletar uma equipe de acordo com o id params dela.
     deleteTeams: async (req, res) => {
         try {
@@ -444,7 +425,7 @@ const serviceControllerTeams = {
 
             if (admin && admin.userType === "Admin" && deleteTeam) {
                 await Teams.findByIdAndDelete(deleteTeam._id);
-                createLogger("Excluiu a equipe de", admin.nickname, deleteTeam.nameTeams, ipAddress)
+                await createLogger("Excluiu a equipe de", admin.nickname, deleteTeam.nameTeams, ipAddress)
                 return res.status(200).json({ error: 'Equipe deletada com sucesso.' });
             }
 

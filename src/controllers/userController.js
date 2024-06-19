@@ -2,11 +2,12 @@ const { User } = require("../Models/useModel.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { Logger } = require('../Models/logsModel')
-const { InfoSystem } = require('../Models/systemModel.js')
+const { InfoSystem } = require('../Models/systemModel.js');
+const { 
+   connectHabbo,
+   createLogger,
+   tokenActiveDb } = require('../utils/UserUtils.js')
 
-
-// Função para gerar um token JWT com base no ID do usuário
-const apiHabbo = `https://www.habbo.com.br/api/public/users?name=`
 const GenerateToken = (id) => {
   return jwt.sign(
     { id },
@@ -17,74 +18,7 @@ const GenerateToken = (id) => {
   );
 };
 
-
-
-//Conecta com a API do habbo
-const connectHabbo = async (nick) => {
-  try {
-    const res = await fetch(`${apiHabbo}${nick}`, {
-      method: 'GET'
-    });
-    const data = await res.json();
-    return data.error ? 'Usuário não encontrado' : data;
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const tokenActiveDb = async (nickname, token) => {
-  const user = await User.findOne({nickname: nickname})
-  if (user) {
-    user.tokenActive = token;
-    await user.save();  // Salva o documento do usuário, não o modelo
-  } else {
-    throw new Error('Usuário não encontrado');
-  }
-}
-
-
-
-
 const serviceControllerUser = {
-
-  register: async (req, res) => {
-    try {
-      const formdata = req.body;
-      const { nick, patent, classes } = formdata;
-      const passwordConf = `${process.env.USER_PASS_REGISTER}`
-      const nickname = await User.findOne({ nickname: nick });
-
-      if (nickname) {
-        return res.status(422).json({ error: "Ops! Esse usuário já existe" });
-      }
-
-      const saltHash = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(passwordConf, saltHash);
-
-      const newUser = {
-        nickname: nick,
-        password: passwordHash,
-        patent: patent,
-        classes: classes,
-        teans: '',
-        status: 'Pendente',
-        tag: 'Vazio',
-        warnings: 0,
-        medals: 0,
-        userType: 'User',
-      };
-
-      const createUser = await User.create(newUser);
-      return !createUser
-        ? res.status(422).json({ error: "Houve um erro, tente novamente mais tarde" })
-        : res.status(201).json({ msg: "Sua conta foi criada agora precisa ser aceita por um administrador." });
-
-    } catch (error) {
-      console.error("Erro ao registrar", error);
-      res.status(500).json({ msg: "Erro ao efetuar cadastro" });
-    }
-  },
-
   // função para efetuar o login.
   login: async (req, res) => {
     try {
@@ -113,17 +47,7 @@ const serviceControllerUser = {
       if (!isMath || checkUser.nickname !== nick) {
         return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' })
       }
-
-
-
-      const newLogger = {
-        user: checkUser.nickname,
-        ip: ipAddress,
-        loggerType: "Efetuou o login no system"
-      }
-
-      await Logger.create(newLogger);
-      
+      await createLogger("Efetuou o login no system.", checkUser.nickname, " ", ipAddress)
       const tokenActive = GenerateToken(checkUser._id);
       await tokenActiveDb(checkUser.nickname, tokenActive);
 
@@ -151,7 +75,7 @@ const serviceControllerUser = {
       const { securityCode, formdata } = req.body;
       const { newUserDopSystem, newPasswordDopSystem, newPasswordDopSystemConf } = formdata;
       const nickname = await User.findOne({ nickname: newUserDopSystem });
-      
+
       if (!nickname) {
         res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
       } else {
@@ -170,7 +94,7 @@ const serviceControllerUser = {
 
           const saltHash = await bcrypt.genSalt(10);
           const passwordHash = await bcrypt.hash(newPasswordDopSystem, saltHash);
-  
+
           nickname.nickname = nickname.nickname;
           nickname.patent = nickname.patent;
           nickname.classes = nickname.classes;
@@ -182,8 +106,8 @@ const serviceControllerUser = {
           nickname.password = passwordHash;
           nickname.userType = nickname.userType;
           await nickname.save();
-         return res.status(200).json({ msg: 'Usuário ativado com sucesso' });
-         
+          return res.status(200).json({ msg: 'Usuário ativado com sucesso' });
+
         };
 
         return res.status(404).json({ msg: "Ops! Este usuário já se encontra ativo" });
@@ -201,6 +125,7 @@ const serviceControllerUser = {
 
   updateUserAdmin: async (req, res) => {
     try {
+      const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
       const { idUser, idEdit, nickname, patent, status, tag, warnings, medals, userType } = req.body;
       const admin = await User.findOne({ _id: idUser });
       const cont = await User.findOne({ _id: idEdit });
@@ -222,8 +147,8 @@ const serviceControllerUser = {
           cont.medals = medals ? medals : cont.medals;
           cont.password = cont.password;
           cont.userType = userType ? userType : cont.userType;
-
           await cont.save();
+          await createLogger(`Alterou o perfil do usuário ${cont.nickname}`, admin.nickname, "", ipAddress)
           return res.status(200).json({ msg: 'Usuário atualizado com sucesso.' });
         }
 
@@ -242,39 +167,36 @@ const serviceControllerUser = {
     try {
       const { idUser, tag } = req.body;
       const cont = await User.findOne({ _id: idUser });
-  
+
       if (!cont) {
-          return res.status(404).json({ error: 'Dados não encontrados.' });
+        return res.status(404).json({ error: 'Dados não encontrados.' });
       }
-  
+
       // Transforma o nickname em minúsculas para tornar a comparação insensível a maiúsculas/minúsculas
       const nicknameLower = cont.nickname.toLowerCase();
-  
+
       // Verifica se todas as letras da tag estão presentes no nickname
       const tagOk = [...tag.toLowerCase()].every(letra => nicknameLower.includes(letra));
-  
+
       if (tagOk) {
-          cont.tag = tag ? tag : cont.tag;
-  
-          await cont.save();
-          return res.status(200).json({ msg: 'Tag cadastrada com sucesso' });
+        cont.tag = tag ? tag : cont.tag;
+
+        await cont.save();
+        return res.status(200).json({ msg: 'Tag cadastrada com sucesso' });
       } else {
-          return res.status(400).json({ error: 'Os caracteres não estão presentes no seu nickname.' });
+        return res.status(400).json({ error: 'Os caracteres não estão presentes no seu nickname.' });
       }
-  } catch (error) {
+    } catch (error) {
       return res.status(500).json({ error: 'Ocorreu um erro ao processar a requisição.' });
-  }
-  
+    }
+
   },
-
-
-
-
 
 
 
   deleteUsers: async (req, res) => {
     try {
+      const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
       const userId = req.params.userId;
       const { nick } = req.body;
       const admin = await User.findOne({ nickname: nick });
@@ -285,11 +207,12 @@ const serviceControllerUser = {
         return res.status(404).json({ msg: 'Usuário não encontrado' });
       }
       if (admin && admin.userType !== "Admin") {
-        return res.status(404).json({ msg: 'Ops! Parece que você não é uma administrador.' });
+        return res.status(404).json({ error: 'Ops! Parece que você não é uma administrador.' });
       }
 
       if (admin && admin.userType === "Admin" && deleteUser) {
         await User.findByIdAndDelete(userId);
+        await createLogger(`Deletou o usuário ${deleteUser.nickname}`, admin.nickname, "", ipAddress)
         return res.status(200).json({ msg: 'Usuário deletedo com sucesso' });
       }
 
@@ -318,13 +241,13 @@ const serviceControllerUser = {
       const page = parseInt(req.query.page) || 1;
       // Tamanho padrão da página é 10 se não for especificado
       const pageSize = parseInt(req.query.pageSize) || 10;
-  
+
       // Consulta para obter todos os usuários, excluindo a senha
       const users = await User.find()
         .select("-password")
         .skip((page - 1) * pageSize) // Pula os registros das páginas anteriores
         .limit(pageSize); // Limita o número de resultados retornados
-  
+
       // Envia os usuários sem a senha como resposta
       res.json(users);
     } catch (error) {
@@ -332,7 +255,7 @@ const serviceControllerUser = {
       res.status(500).json({ msg: 'Erro ao recuperar usuários' });
     }
   },
-  
+
 
   getAllNicks: async (req, res) => {
     try {
@@ -396,7 +319,7 @@ const serviceControllerUser = {
     } catch (error) {
       console.log('Ocorreu um Erro.')
     }
- 
+
   },
 
 

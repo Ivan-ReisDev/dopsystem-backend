@@ -15,7 +15,7 @@ const serviceControllerPublication = require("../controllers/PublicationControll
 const serviceControllerEndorsement = require("../controllers/endorsementController.js");
 
 //Rotas publicas
-router.route('/register').post((req, res) => serviceControllerUser.register(req, res))
+// router.route('/register').post((req, res) => serviceControllerUser.register(req, res))
 router.route('/login').post((req, res) => serviceControllerUser.login(req, res))
 router.route('/users/update').put((req, res) => serviceControllerUser.updateUser(req, res))
 router.route('/logout').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']), getcurrentUser, (req, res) => serviceControllerUser.logoutPass(req, res))

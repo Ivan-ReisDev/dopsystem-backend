@@ -2,17 +2,9 @@ const { Teams } = require("../Models/teamsModel");
 const { User } = require("../Models/useModel");
 const { Requirements } = require("../Models/RequirementsModel");
 const { InfoSystem } = require("../Models/systemModel");
+const { isDiretor, isSuperior, register, RegisterContExist, connectHabbo } = require("../utils/UserUtils")
 const bcrypt = require("bcryptjs");
-
-const isDiretor = async (diretor) => {
-    const info = await InfoSystem.findOne();
-
-    const isValidado = info.patents.includes(diretor) ?
-        info.patents.indexOf(diretor) :
-        info.paidPositions.indexOf(diretor);
-    return isValidado >= 14 ? true : false;
-
-}
+const { editRequeriment } = require("./RhController");
 
 const serviceControllerRequirements = {
     //Função responsável por criar a equioe
@@ -21,28 +13,13 @@ const serviceControllerRequirements = {
             const { idUser, promoted, reason } = req.body;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknamePromoted = await User.findOne({ nickname: promoted });
-            const info = await InfoSystem.findOne();
-
-            if (!info || !info.patents) {
-                return res.status(500).json({ msg: 'Informações do sistema não encontradas.' });
-            }
-
-            const patentOperadorIndex = info.patents.includes(nicknameOperator.patent) ?
-                info.patents.indexOf(nicknameOperator.patent) :
-                info.paidPositions.indexOf(nicknameOperator.patent);
-
-            const patentPromotedIndex = info.patents.includes(nicknamePromoted.patent) ?
-                info.patents.indexOf(nicknamePromoted.patent) :
-                info.paidPositions.indexOf(nicknamePromoted.patent);
-
-            const indexRealOperator = patentOperadorIndex - 2;
+            const validateSuperior = await isSuperior(nicknameOperator, nicknamePromoted, "Promoção");
             const validete = await isDiretor(nicknameOperator.patent);
-            if (patentPromotedIndex <= indexRealOperator || nicknameOperator.userType === "Admin" || validete === true) {
-                const newIndexPatent = patentPromotedIndex + 1;
-                const newPatent = info.patents[newIndexPatent];
+
+            if (validateSuperior.isSuperior === true || nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
                     promoted,
-                    newPatent,
+                    newPatent:validateSuperior.newPatent,
                     reason,
                     patentOperador: nicknameOperator.patent,
                     operator: nicknameOperator.nickname,
@@ -73,30 +50,15 @@ const serviceControllerRequirements = {
             const { idUser, promoted, reason } = req.body;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknameRelegation = await User.findOne({ nickname: promoted });
-            const info = await InfoSystem.findOne();
-
-            if (!info || !info.patents || !info.paidPositions) {
-                return res.status(500).json({ msg: 'Informações do sistema não encontradas.' });
-            }
-
-            const patentOperadorIndex = info.patents.includes(nicknameOperator.patent) ?
-                info.patents.indexOf(nicknameOperator.patent) :
-                info.paidPositions.indexOf(nicknameOperator.patent);
-
-            const patentRelegationIndex = info.patents.includes(nicknameRelegation.patent) ?
-                info.patents.indexOf(nicknameRelegation.patent) :
-                info.paidPositions.indexOf(nicknameRelegation.patent);
-
-            const indexRealOperator = patentOperadorIndex - 2;
-
             const validete = await isDiretor(nicknameOperator.patent);
-            if (nicknameRelegation <= indexRealOperator || nicknameOperator.userType === "Admin" || validete === true) {
-                const newIndexPatent = patentRelegationIndex - 1;
-                const newPatent = info.patents[newIndexPatent];
+            const validateSuperior = await isSuperior(nicknameOperator, nicknameRelegation, "Rebaixamento");
 
+
+            
+            if (validateSuperior.isSuperior === true || nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
                     promoted,
-                    newPatent,
+                    newPatent: validateSuperior.newPatent,
                     reason,
                     patentOperador: nicknameOperator.patent,
                     operator: nicknameOperator.nickname,
@@ -122,31 +84,16 @@ const serviceControllerRequirements = {
         }
     },
 
-
-
     createRequirementsWarning: async (req, res) => {
         try {
             const { idUser, promoted, reason } = req.body;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknameRelegation = await User.findOne({ nickname: promoted });
-            const info = await InfoSystem.findOne();
 
-            if (!info || !info.patents || !info.paidPositions) {
-                return res.status(500).json({ msg: 'Informações do sistema não encontradas.' });
-            }
-
-            const patentOperadorIndex = info.patents.includes(nicknameOperator.patent) ?
-                info.patents.indexOf(nicknameOperator.patent) :
-                info.paidPositions.indexOf(nicknameOperator.patent);
-
-            const patentRelegationIndex = info.patents.includes(nicknameRelegation.patent) ?
-                info.patents.indexOf(nicknameRelegation.patent) :
-                info.paidPositions.indexOf(nicknameRelegation.patent);
-
-            const indexRealOperator = patentOperadorIndex - 2;
-
+            const validateSuperior = await isSuperior(nicknameOperator, nicknameRelegation, "Advertência");
             const validete = await isDiretor(nicknameOperator.patent);
-            if (patentRelegationIndex <= indexRealOperator || nicknameOperator.userType === "Admin" || validete === true) {
+
+            if (validateSuperior.isSuperior === true || nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
                     promoted,
                     newPatent: nicknameRelegation.patent,
@@ -181,28 +128,14 @@ const serviceControllerRequirements = {
             const { idUser, promoted, reason } = req.body;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknameRelegation = await User.findOne({ nickname: promoted });
-            const info = await InfoSystem.findOne();
-
-            if (!info || !info.patents || !info.paidPositions) {
-                return res.status(500).json({ msg: 'Informações do sistema não encontradas.' });
-            }
 
             if (nicknameRelegation.status === 'Demissão') {
                 return res.status(404).json({ msg: "Ops! Este usuário não se encontra no quadro de funcionários." });
             };
 
-            const patentOperadorIndex = info.patents.includes(nicknameOperator.patent) ?
-                info.patents.indexOf(nicknameOperator.patent) :
-                info.paidPositions.indexOf(nicknameOperator.patent);
-
-            const patentRelegationIndex = info.patents.includes(nicknameRelegation.patent) ?
-                info.patents.indexOf(nicknameRelegation.patent) :
-                info.paidPositions.indexOf(nicknameRelegation.patent);
-
-            const indexRealOperator = patentOperadorIndex - 2;
-
+            const validateSuperior = await isSuperior(nicknameOperator, nicknameRelegation, "Demissão");
             const validete = await isDiretor(nicknameOperator.patent);
-            if (patentRelegationIndex <= indexRealOperator || nicknameOperator.userType === "Admin" || validete === true) {
+            if (validateSuperior.isSuperior === true || nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
                     promoted,
                     newPatent: "Civil",
@@ -276,30 +209,30 @@ const serviceControllerRequirements = {
             const { idUser, promoted, patent, reason } = req.body;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknameRelegation = await User.findOne({ nickname: promoted });
-            const info = await InfoSystem.findOne();
-            const passwordConf = "DOPsystem@@2024"
+
+
+            const responseHabbo = await connectHabbo(promoted.trim());
+            if(responseHabbo === "error") {
+              return res.status(404).json({ error: 'Este usuário não existe no Habbo Hotel' });
+            }
+
+            const validateSuperior = await isSuperior(nicknameOperator, nicknameRelegation, "Contrato", patent);
+            if (validateSuperior === false) {
+                return res.status(422).json({ error: 'Ops! Você não tem permissão para contratar esse usuário reporte o caso para algum superior' });
+            }
 
             if (nicknameRelegation) {
-                return res.status(422).json({ error: "Ops! Esse usuário já existe" });
-            }
-
-            if (!info || !info.patents || !info.paidPositions) {
-                return res.status(500).json({ msg: 'Informações do sistema não encontradas.' });
-            }
-
-            const patentOperadorIndex = info.patents.includes(nicknameOperator.patent) ?
-                info.patents.indexOf(nicknameOperator.patent) :
-                info.paidPositions.indexOf(nicknameOperator.patent);
-
-            const patentRelegationIndex = info.patents.includes(patent) ?
-                info.patents.indexOf(patent) :
-                info.paidPositions.indexOf(patent);
-
-            const indexRealOperator = patentOperadorIndex - 2;
-
-            if (patentRelegationIndex >= indexRealOperator) {
-                return res.status(422).json({ error: 'Ops! Você não tem permissão para adverter esse usuário reporte o caso para algum superior' });
-            }
+                const response = await RegisterContExist(nicknameRelegation.nickname, patent, " ");
+          
+                if (response.status === false) {
+                  return res.status(400).json({ error: response.info });
+                }
+              } else {
+                const registrered = await register(promoted.trim(), patent);
+                if (registrered.status === false) {
+                  return res.status(422).json({ error: registrered.info });
+                }
+              }
 
             const newRequirement = {
                 promoted,
@@ -310,27 +243,10 @@ const serviceControllerRequirements = {
                 typeRequirement: "Contrato",
                 status: "Pendente"
             };
+            
 
-
-            const saltHash = await bcrypt.genSalt(10);
-            const passwordHash = await bcrypt.hash(passwordConf, saltHash);
-
-            const newUser = {
-                nickname: promoted,
-                patent: patent,
-                classes: "",
-                teans: 'System',
-                status: 'Pendente',
-                tag: 'Vazio',
-                warnings: "0",
-                medals: "0",
-                password: passwordHash,
-                userType: 'User'
-            };
-
-            await Requirements.create(newRequirement);
-            const createUser = await User.create(newUser);
-            return !createUser
+            const resRequeriment =  await Requirements.create(newRequirement);
+            return !resRequeriment
                 ? res.status(422).json({ error: "Houve um erro, tente novamente mais tarde" })
                 : res.status(201).json({ msg: "Contrato efetuado com sucesso." });
 
