@@ -132,35 +132,37 @@ const serviceControllerDocs = {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
             const { idUser, nameDocs, content, docsType, idDoc, script } = req.body;
-
+    
             // Validação do ID do documento
             if (!mongoose.Types.ObjectId.isValid(idDoc)) {
                 return res.status(400).json({ error: 'ID do documento inválido.' });
             }
-
+    
             const userAdmin = await User.findById(idUser);
             const docUpdate = await DocsSystem.findById(idDoc);
             const teams = await Teams.findOne({ nameTeams: docsType });
+            
+            // Validação da existência do documento
             if (!docUpdate) {
-        
                 return res.status(404).json({ error: 'Ops! Documento não encontrado.' });
             }
-
-            if (userAdmin && (userAdmin.userType === "Admin" || userAdmin.nickname === teams.leader || userAdmin.userType === "Diretor")) {
-
-                if(script === true) {
-                    await createClasse(nameDocs, docsType)
-                }
-                docUpdate.nameDocs = nameDocs ? nameDocs : docUpdate.nameDocs;
-                docUpdate.content = content ? content : docUpdate.content;
-                docUpdate.docsType = docsType ? docsType : docUpdate.docsType;
-                docUpdate.script = script ? script : script.docsType;
+    
+            if (userAdmin && (userAdmin.userType === "Admin" || (teams && userAdmin.nickname === teams.leader) || userAdmin.userType === "Diretor")) {
                 
-
+                if (script === true) {
+                    await createClasse(nameDocs, docsType);
+                }
+    
+                docUpdate.nameDocs = nameDocs || docUpdate.nameDocs;
+                docUpdate.content = content || docUpdate.content;
+                docUpdate.docsType = docsType || docUpdate.docsType;
+                docUpdate.script = script !== undefined ? script : docUpdate.script;
+    
                 await docUpdate.save();
-                createLogger("Editou o documento", userAdmin.nickname, docUpdate.nameDocs, ipAddress)
+                createLogger("Editou o documento", userAdmin.nickname, docUpdate.nameDocs, ipAddress);
                 return res.status(200).json({ msg: 'Documento atualizado com sucesso!' });
             }
+            
             return res.status(403).json({ error: 'Ops! Parece que você não é um administrador.' });
         } catch (error) {
             console.error('Ops! Não foi possível atualizar o documento.', error);
