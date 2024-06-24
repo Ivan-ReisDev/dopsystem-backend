@@ -1,7 +1,6 @@
 const { User } = require("../Models/useModel.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const { Logger } = require('../Models/logsModel')
 const { InfoSystem } = require('../Models/systemModel.js');
 const { 
    connectHabbo,
@@ -237,24 +236,29 @@ const serviceControllerUser = {
 
   getAll: async (req, res) => {
     try {
-      // Página padrão é 1 se não for especificada
-      const page = parseInt(req.query.page) || 1;
-      // Tamanho padrão da página é 10 se não for especificado
-      const pageSize = parseInt(req.query.pageSize) || 10;
+        const page = parseInt(req.query.page) || 1;
+        const pageSize = parseInt(req.query.pageSize) || 10;
+        const nickname = req.query.nickname; // Captura o nickname da query string
 
-      // Consulta para obter todos os usuários, excluindo a senha
-      const users = await User.find()
-        .select("-password")
-        .skip((page - 1) * pageSize) // Pula os registros das páginas anteriores
-        .limit(pageSize); // Limita o número de resultados retornados
+        let query;
+        if (nickname) {
+            query = User.find({ nickname: nickname }).select("-password");
+        } else {
+            query = User.find().select("-password");
+        }
 
-      // Envia os usuários sem a senha como resposta
-      res.json(users);
+        const users = await query
+            .skip((page - 1) * pageSize)
+            .limit(pageSize);
+
+        res.json(users);
     } catch (error) {
-      console.error('Erro ao recuperar usuários', error);
-      res.status(500).json({ msg: 'Erro ao recuperar usuários' });
+        console.error('Erro ao recuperar usuários:', error); // Log mais detalhado do erro
+        res.status(500).json({ error: 'Erro ao recuperar usuários' });
     }
-  },
+},
+
+
 
 
   getAllNicks: async (req, res) => {
