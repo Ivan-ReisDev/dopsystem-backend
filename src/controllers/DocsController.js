@@ -1,22 +1,9 @@
 const { Teams } = require("../Models/teamsModel");
 const { User } = require("../Models/useModel");
 const { DocsSystem } = require("../Models/docsModel");
-const { Logger } = require('../Models/logsModel');
-const { Classes } = require("../Models/classesModel")
+const { Classes } = require("../Models/classesModel");
+const { createLogger } = require("../utils/UserUtils")
 const mongoose = require('mongoose');
-
-const createLogger = async (action, user, name, ip) => {
-    const newLogger = {
-        user: user,
-        ip: ip,
-        loggerType: `${action} ${name}`
-    }
-
-    await Logger.create(newLogger);
-
-}
-
-
 
 
 const createClasse = async (classe, team) => {
@@ -64,15 +51,7 @@ const serviceControllerDocs = {
                     status: "Ativo",
                     script,
                 };
-    
-                const newLogger = {
-                    user: nickname.nickname,
-                    ip: ipAddress,
-                    loggerType: `Um novo documento foi criado com o nome: ${nameDocs}`
-                };
-    
-                await Logger.create(newLogger);
-    
+                await createLogger("Criou um novo documento", nickname.nickname, nameDocs, ipAddress);
                 const docCriado = await DocsSystem.create(newDoc);
     
                 if (!docCriado) {
@@ -159,7 +138,7 @@ const serviceControllerDocs = {
                 docUpdate.script = script !== undefined ? script : docUpdate.script;
     
                 await docUpdate.save();
-                createLogger("Editou o documento", userAdmin.nickname, docUpdate.nameDocs, ipAddress);
+                await createLogger("Editou o documento", userAdmin.nickname, docUpdate.nameDocs, ipAddress);
                 return res.status(200).json({ msg: 'Documento atualizado com sucesso!' });
             }
             
@@ -185,12 +164,13 @@ const serviceControllerDocs = {
 
             if (admin && (admin.userType === "Admin" || admin.userType === "Diretor")) {
                 await DocsSystem.findByIdAndDelete(deleteDoc._id);
-                createLogger("Deletou o documento", admin.nickname, deleteDoc.nameDocs, ipAddress)
+                await createLogger("Deletou o documento", admin.nickname, deleteDoc.nameDocs, ipAddress);
+
                 return res.status(200).json({ msg: 'Documento deletedo com sucesso' });
 
             } else if (TeamSelect.leader === admin.nickname) {
                 await DocsSystem.findByIdAndDelete(deleteDoc._id);
-                createLogger("Deletou o documento", admin.nickname, deleteDoc.nameDocs, ipAddress)
+                await createLogger("Deletou o documento", admin.nickname, deleteDoc.nameDocs, ipAddress);
                 return res.status(200).json({ msg: 'Documento deletedo com sucesso' });
 
             } else {

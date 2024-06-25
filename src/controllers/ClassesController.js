@@ -175,57 +175,57 @@ const serviceControllerClasse = {
 
   postCI: async (req, res) => {
     try {
-      const { idUser, student, reason } = req.body;
-      const nicknameDocente = await User.findOne({ _id: idUser });
-      const nicknameUser = await User.findOne({ nickname: student });
-  
-      if (!idUser || !reason || !student) {
-        return res.status(404).json({ error: 'Por favor preencha todos os campos solicitados' });
-      }
+        const { idUser, student, reason } = req.body;
 
-      const responseHabbo = await connectHabbo(student.trim());
-      if(responseHabbo === "error") {
-        return res.status(404).json({ error: 'Este usuário não existe no Habbo Hotel' });
-      }
-  
-      if (!nicknameDocente) {
-        return res.status(400).json({ error: 'Dados não encontrados, por favor tente mais tarde' });
-      }
-  
-      if (nicknameUser) {
-        const response = await RegisterContExist(nicknameUser.nickname, "Soldado", "Curso Inicial [C.I]");
-  
-        if (response.status === false) {
-          return res.status(400).json({ error: response.info });
+        if (!idUser || !reason || !student) {
+            return res.status(400).json({ error: 'Por favor preencha todos os campos solicitados' });
         }
-      } else {
-        const registrered = await register(student.trim(), "Soldado");
-        if (registrered.status === false) {
-          return res.status(422).json({ error: registrered.info });
+
+        const nicknameDocente = await User.findOne({ _id: idUser });
+        if (!nicknameDocente) {
+            return res.status(404).json({ error: 'Docente não encontrado.' });
         }
-      }
-  
-      const newRequirement = {
-        promoted: student,
-        classe: "Curso Inicial [C.I]",
-        reason,
-        operator: nicknameDocente.nickname,
-        team: 'Corpo de Funcionários',
-        typeRequirement: "Aula",
-        status: "Aprovado"
-      };
-  
-      const createRequirement = await Requirements.create(newRequirement);
-      if (!createRequirement) {
-        return res.status(422).json({ error: 'Ops! Parece que houve um erro, tente novamente mais tarde.' });
-      }
-  
-      return res.status(201).json({ msg: 'Requerimento postado com sucesso.' });
+
+        const responseHabbo = await connectHabbo(student.trim());
+        if (responseHabbo === "error") {
+            return res.status(404).json({ error: 'Este usuário não existe no Habbo Hotel' });
+        }
+
+        const nicknameUser = await User.findOne({ nickname: student });
+        if (nicknameUser) {
+            const response = await RegisterContExist(nicknameUser.nickname, "Soldado", "Curso Inicial [C.I]");
+            if (!response.status) {
+                return res.status(400).json({ error: response.info });
+            }
+        } else {
+            const registered = await register(student.trim(), "Soldado");
+            if (!registered.status) {
+                return res.status(422).json({ error: registered.info });
+            }
+        }
+
+        const newRequirement = {
+            promoted: student,
+            classe: "Curso Inicial [C.I]",
+            reason,
+            operator: nicknameDocente.nickname,
+            team: 'Corpo de Funcionários',
+            typeRequirement: "Aula",
+            status: "Aprovado"
+        };
+
+        const createRequirement = await Requirements.create(newRequirement);
+        if (!createRequirement) {
+            return res.status(500).json({ error: 'Ops! Parece que houve um erro, tente novamente mais tarde.' });
+        }
+
+        return res.status(201).json({ msg: 'Requerimento postado com sucesso.' });
     } catch (error) {
-      console.error('Erro ao postar requerimento.', error);
-      res.status(500).json({ error: 'Erro ao postar requerimento.' });
+        console.error('Erro ao postar requerimento.', error);
+        res.status(500).json({ error: 'Erro ao postar requerimento.' });
     }
-  },
+},
+
   
   updateClasse: async (req, res) => {
     try {

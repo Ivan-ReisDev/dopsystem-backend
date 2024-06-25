@@ -207,33 +207,43 @@ const serviceControllerRequirements = {
     createContract: async (req, res) => {
         try {
             const { idUser, promoted, patent, reason } = req.body;
+            
+            // Procurar o operador pelo idUser
             const nicknameOperator = await User.findOne({ _id: idUser });
-            const nicknameRelegation = await User.findOne({ nickname: promoted });
-
-
-            const responseHabbo = await connectHabbo(promoted.trim());
-            if(responseHabbo === "error") {
-              return res.status(404).json({ error: 'Este usuário não existe no Habbo Hotel' });
+            if (!nicknameOperator) {
+                return res.status(404).json({ error: 'Operador não encontrado' });
             }
-
+    
+            // Procurar o usuário promovido pelo nickname
+            const nicknameRelegation = await User.findOne({ nickname: promoted });
+    
+            // Conectar ao Habbo para verificar a existência do usuário
+            const responseHabbo = await connectHabbo(promoted.trim());
+            if (responseHabbo === "error") {
+                return res.status(404).json({ error: 'Este usuário não existe no Habbo Hotel' });
+            }
+    
+            // Validar se o operador tem permissão para contratar o usuário promovido
             const validateSuperior = await isSuperior(nicknameOperator, nicknameRelegation, "Contrato", patent);
             if (validateSuperior === false) {
-                return res.status(422).json({ error: 'Ops! Você não tem permissão para contratar esse usuário reporte o caso para algum superior' });
+                return res.status(422).json({ error: 'Ops! Você não tem permissão para contratar esse usuário. Reporte o caso para algum superior.' });
             }
-
+    
+            // Verificar se o usuário promovido já está registrado
             if (nicknameRelegation) {
                 const response = await RegisterContExist(nicknameRelegation.nickname, patent, " ");
-          
                 if (response.status === false) {
-                  return res.status(400).json({ error: response.info });
+                    return res.status(400).json({ error: response.info });
                 }
-              } else {
+            } else {
+                // Registrar novo usuário se não estiver registrado
                 const registrered = await register(promoted.trim(), patent);
                 if (registrered.status === false) {
-                  return res.status(422).json({ error: registrered.info });
+                    return res.status(422).json({ error: registrered.info });
                 }
-              }
-
+            }
+    
+            // Criar novo requisito de contrato
             const newRequirement = {
                 promoted,
                 newPatent: patent,
@@ -243,18 +253,19 @@ const serviceControllerRequirements = {
                 typeRequirement: "Contrato",
                 status: "Pendente"
             };
-            
-
-            const resRequeriment =  await Requirements.create(newRequirement);
+    
+            // Salvar o requisito no banco de dados
+            const resRequeriment = await Requirements.create(newRequirement);
             return !resRequeriment
                 ? res.status(422).json({ error: "Houve um erro, tente novamente mais tarde" })
                 : res.status(201).json({ msg: "Contrato efetuado com sucesso." });
-
+    
         } catch (error) {
             console.error("Erro ao registrar", error);
             res.status(500).json({ msg: "Erro ao efetuar cadastro" });
         }
     },
+    
 
 
     createSales: async (req, res) => {
