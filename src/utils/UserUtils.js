@@ -52,8 +52,9 @@ const isDiretor = async (diretor) => {
 }
 
 //Verifica se um usuário é superior a outro
-const isSuperior = async (higher, subordinate, type, patentContract) => {
+const isSuperior = async (higher, subordinate, type, patentContract, res) => {
   const info = await InfoSystem.findOne();
+  const diretor = isDiretor(higher);
 
   if (!info || !info.patents) {
     return res.status(500).json({ msg: 'Informações do sistema não encontradas.' });
@@ -68,51 +69,48 @@ const isSuperior = async (higher, subordinate, type, patentContract) => {
     info.paidPositions.indexOf(!patentContract ? subordinate.patent : patentContract);
 
   const indexRealOperator = patentOperadorIndex - 2;
-  if (patentPromotedIndex <= indexRealOperator) {
+  if (patentPromotedIndex <= indexRealOperator || diretor === true ) {
 
     let newIndexPatent;
-    let msg;
-    let newPatent;
 
-    switch (true) {
-      case type === "Promoção":
+    switch (type) {
+      case "Promoção":
         newIndexPatent = patentPromotedIndex + 1;
         newPatent = info.patents.includes(subordinate.patent) ? info.patents[newIndexPatent] : info.paidPositions[newIndexPatent];
         break;
 
-      case type === "Rebaixamento":
+      case "Rebaixamento":
         newIndexPatent = patentPromotedIndex - 1;
         newPatent = info.patents.includes(subordinate.patent) ? info.patents[newIndexPatent] : info.paidPositions[newIndexPatent];
         break;
 
-      case type === "Demissão":
+      case "Demissão":
         newPatent = "Civil";
         break;
 
-      case type === "Advertência":
+      case "Advertência":
         newPatent = null;
         break;
 
-      case type === "Contrato":
+      case "Contrato":
         newPatent = patentContract;
         break;
 
-
       default:
-        msg = "Houve um erro.";
-        break;
+        return res.status(400).json({ msg: "Tipo de operação não reconhecido." });
     }
-
 
     return {
       isSuperior: true,
       newPatent: newPatent
-    }
+    };
+  } else {
+    return {
+      isSuperior: false,
+      newPatent: newPatent
+    };
   }
-
-
-
-}
+};
 
 //Cria um novo usuário no system
 const register = async (nick, patent) => {
