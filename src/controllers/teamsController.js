@@ -106,6 +106,7 @@ const serviceControllerTeams = {
                 teamUpdate.teamsType = teamUpdate.teamsType;
                 teamUpdate.leader = teamUpdate.leader;
                 teamUpdate.viceLeader = teamUpdate.viceLeader;
+                teamUpdate.emblema = teamUpdate.emblema;
                 teamUpdate.members = newArray;
                 teamUpdate.classes = teamUpdate.classes;
 
@@ -179,6 +180,7 @@ const serviceControllerTeams = {
                 teamUpdate.teamsType = teamUpdate.teamsType;
                 teamUpdate.leader = teamUpdate.leader;
                 teamUpdate.viceLeader = teamUpdate.viceLeader;
+                teamUpdate.emblema = teamUpdate.emblema 
                 teamUpdate.members = newMemberArray;
                 teamUpdate.classes = teamUpdate.classes;
 
@@ -219,7 +221,7 @@ const serviceControllerTeams = {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
             console.log(req.body);
-            const { idUser, nameTeams, leader, viceLeader } = req.body;
+            const { idUser, nameTeams, leader, viceLeader, emblema } = req.body;
     
             if (!nameTeams || !leader || !viceLeader) {
                 return res.status(422).json({ error: 'Preencha todos os campos' });
@@ -265,6 +267,7 @@ const serviceControllerTeams = {
                 nameTeams: nameTeams,
                 leader: leader,
                 viceLeader: viceLeader,
+                emblema: emblema ? emblema : "Vazio",
                 members: [membersLeader, membersViceLeader],
             };
 
@@ -331,7 +334,7 @@ const serviceControllerTeams = {
 
     updateTeams: async (req, res) => {
         try {
-            const { idUser, teamsId, nameTeams, leader, viceLeader, members } = req.body;
+            const { idUser, teamsId, nameTeams, leader, viceLeader, members, emblema } = req.body;
     
             if (!teamsId || !nameTeams || !leader || !viceLeader) {
                 return res.status(422).json({ error: 'Preencha todos os campos obrigatórios.' });
@@ -388,6 +391,7 @@ const serviceControllerTeams = {
             teamsUpdate.leader = nicknameLeader.nickname;
             teamsUpdate.viceLeader = nicknameViceLeader.nickname
             teamsUpdate.nameTeams = nameTeams || teamsUpdate.nameTeams;
+            teamsUpdate.emblema = emblema ? emblema : nicknameViceLeader.emblema;        
     
             // Atualizando o perfil dos líderes
             await updateProfile(nicknameLeader.nickname, teamsUpdate.nameTeams);
