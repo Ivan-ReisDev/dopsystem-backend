@@ -21,60 +21,53 @@ const serviceControllerUser = {
   // função para efetuar o login.
   login: async (req, res) => {
     try {
-        const { nick, password } = req.body;
-        const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+      const { nick, password } = req.body;
+      const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-        const checkUser = await User.findOne({ nickname: nick });
+      const checkUser = await User.findOne({ nickname: nick })
 
-        if (!checkUser) {
-            return res.status(400).json({ error: 'Ops! Usuário não foi encontrado' });
-        }
+      if (!checkUser) {
+        return res.status(400).json({ error: 'Ops! Usuário não foi encontrado' })
+      }
 
-        if (checkUser.status === "CFO") {
-            return res.status(400).json({ error: 'Sua conta está suspensa até que termine seu CFO.' });
-        }
+      if (checkUser.status === "CFO") {
+        return res.status(400).json({ error: 'Sua conta está suspensa até que termine seu CFO.' })
+      }
 
-        if (checkUser.status === "Pendente") {
-            return res.status(400).json({ error: 'Por favor ative sua conta no system.' });
-        }
+      if (checkUser.status === "Pendente") {
+        return res.status(400).json({ error: 'Por favor ative sua conta no system.' })
+      }
 
-        if (checkUser.status === "Desativado") {
-            return res.status(400).json({ error: 'Ops! Parece que sua conta encontra-se desativada.' });
-        }
+      if (checkUser.status === "Desativado") {
+        return res.status(400).json({ error: 'Ops! Parece que sua conta encontra-se desativada.' })
+      }
 
-        const isMath = await bcrypt.compare(password, checkUser.password);
-        if (!isMath || checkUser.nickname !== nick) {
-            return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' });
-        }
+      const isMath = await bcrypt.compare(password, checkUser.password);
+      if (!isMath || checkUser.nickname !== nick) {
+        return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' })
+      }
+      await createLogger("Efetuou o login no system.", checkUser.nickname, " ", ipAddress)
+      const tokenActive = GenerateToken(checkUser._id);
+      await tokenActiveDb(checkUser.nickname, tokenActive);
 
-        await createLogger("Efetuou o login no system.", checkUser.nickname, " ", ipAddress);
-        const tokenActive = GenerateToken(checkUser._id);
-        await tokenActiveDb(checkUser.nickname, tokenActive);
-
-        // Enviar o token como um cookie HTTP-only
-        res.cookie('token', tokenActive, {
-            httpOnly: true,
-            secure: true, // Define como true se estiver em produção
-            sameSite: 'none' // Define as políticas de SameSite conforme necessário
-        });
-
-        return res.status(201).json({
-            _id: checkUser._id,
-            nickname: checkUser.nickname,
-            patent: checkUser.patent,
-            classes: checkUser.classes,
-            teans: checkUser.teans,
-            status: checkUser.status,
-            userType: checkUser.userType,
-            ip: ipAddress
-        });
+      return res.status(201).json({
+        _id: checkUser._id,
+        nickname: checkUser.nickname,
+        patent: checkUser.patent,
+        classes: checkUser.classes,
+        teans: checkUser.teans,
+        status: checkUser.status,
+        userType: checkUser.userType,
+        token: tokenActive,
+        ip: ipAddress
+      })
 
     } catch (error) {
-        console.error("Erro ao efetuar o login.", error);
-        res.status(500).json({ msg: "Erro ao efetuar o login." });
+      console.error("Erro ao efetuar o login.", error);
+      res.status(500).json({ msg: "Erro ao efetuar o login." });
     }
-},
 
+  },
 
   updateUser: async (req, res) => {
     try {
@@ -320,27 +313,19 @@ const serviceControllerUser = {
 
 
 
-  logoutUser: async (req, res) => {
+  logoutPass: async (req, res) => {
     try {
-      // Limpar o cookie HTTP-only chamado 'token'
-      res.clearCookie('token', {
-        httpOnly: true,
-        secure: true, // Defina como true se estiver usando HTTPS
-        sameSite: 'Lax' // ou 'Lax', dependendo da sua configuração
-      });
-  
-      // Opcionalmente, chamar uma função de logout do seu framework, se necessário
-      // res.logout(); // Use isto se você estiver usando uma biblioteca que requer isso
-  
-      // Retornar uma resposta de sucesso
-      res.status(200).json({ message: 'Logout realizado com sucesso.' });
-  
+      const user = req.user;
+      console.log("ENTROU AQUI")
+      res.logout()
+      res.status(200).json(user);
+
     } catch (error) {
-      console.log('Ocorreu um erro ao fazer logout:', error);
-      res.status(500).json({ message: 'Ocorreu um erro ao fazer logout.' });
+      console.log('Ocorreu um Erro.')
     }
+
   },
-  
+
 
 };
 
