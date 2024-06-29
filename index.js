@@ -20,7 +20,7 @@ app.use(cookieParser()); // Adiciona suporte para parsing de cookies
 
 // Configurações de CORS para permitir cookies
 app.use(cors({
-  origin: 'https://policiadop.com.br', // Altere para o domínio da sua aplicação cliente
+  origin: 'https://policiadop.com.br/', // Altere para o domínio da sua aplicação cliente
   credentials: true
 }));
 
