@@ -1,12 +1,4 @@
 {
-  "name": "dopsystem",
-  "version": "1.0.0",
-  "description": "Descrição do seu projeto",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
-  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
@@ -24,6 +16,8 @@
     "nodemon": "^3.0.2",
     "vercel": "^32.3.0"
   },
-  "author": "Ivan Reis",
-  "license": "MIT"
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  }
 }

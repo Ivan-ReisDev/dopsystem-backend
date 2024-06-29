@@ -17,11 +17,6 @@ const teamsSchema = new mongoose.Schema({
         required: false
     },
 
-    emblema: {
-        type: String,
-        required: false
-    },
-
     members: {
         type: Array,
         required: false
