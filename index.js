@@ -2,30 +2,28 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const fs = require("fs");
-const https = require("https")
-const router = require("./src/routes/service")
+const https = require("https");
+const router = require("./src/routes/service");
 
 const port = process.env.PORT_APP || 3000;
 const httpsPort = 443;
 
 const app = express();
+
+// Configuração do CORS
+app.use(cors({
+  origin: 'https://policiadop.com.br', // Altere para o domínio da sua aplicação cliente
+  credentials: true  // Permite incluir cookies na requisição
+}));
+
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.json());
 
 const connectdb = require('./src/DB/connect.js');
 connectdb();
-app.use('/api', router);
 
-// Resolução do conflito de CORS
-app.use(cors());
-// Se você deseja suporte para cookies, adicione o cookieParser
-// app.use(cookieParser());
-// Configurações de CORS para permitir cookies
-// app.use(cors({
-//   origin: 'https://policiadop.com.br', // Altere para o domínio da sua aplicação cliente
-//   credentials: true
-// }));
+app.use('/api', router);
 
 app.listen(port, () => {
   console.log(`Servidor HTTP online na porta ${port}, acesse: http://localhost:${port}/`);
