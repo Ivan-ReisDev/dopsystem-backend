@@ -6,12 +6,13 @@ const fs = require("fs");
 const https = require("https");
 const router = require("./src/routes/service");
 const cron = require('node-cron');
-const { clearTokens } = require('./src/utils/UserUtils.js')
+const { clearTokens } = require('./src/utils/UserUtils.js');
 
 const port = process.env.PORT_APP || 3000;
 const httpsPort = 443;
 
 const app = express();
+
 // Configuração do CORS
 app.use(cors({
   origin: 'https://policiadop.com.br', // Altere para o domínio da sua aplicação cliente
@@ -28,11 +29,7 @@ connectdb();
 
 app.use('/api', router);
 
-// cron.schedule('*/15 * * * * *', () => {
-//   console.log('Executando tarefa de limpeza de tokens a cada 15 segundos');
-//   clearTokens(); // Supondo que `clearTokens` é a função que limpa os tokens
-// });
-
+// Tarefa agendada para limpar tokens a cada 3 horas
 cron.schedule('0 0 */3 * *', () => {
   console.log('Executando tarefa de limpeza de tokens');
   clearTokens();
