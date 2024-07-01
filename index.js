@@ -36,16 +36,6 @@ cron.schedule('0 0 */3 * *', () => {
   clearTokens();
 });
 
-// Rota de exemplo para configurar um cookie HttpOnly
-app.get('/setcookie', (req, res) => {
-  res.cookie('token', 'your_jwt_token', {
-    httpOnly: true, // Configura o cookie como HttpOnly
-    secure: true, // Garante que o cookie só seja enviado em conexões HTTPS
-    sameSite: 'Strict' // Garante que o cookie só seja enviado no mesmo site
-  });
-  res.send('Cookie configurado');
-});
-
 // Servidor HTTP
 app.listen(port, () => {
   console.log(`Servidor HTTP online na porta ${port}, acesse: http://localhost:${port}/`);

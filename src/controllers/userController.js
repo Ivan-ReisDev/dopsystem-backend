@@ -56,7 +56,7 @@ const serviceControllerUser = {
 
         res.cookie('token', tokenActive, {
             httpOnly: true, // Configura o cookie como HttpOnly
-            secure: false, // Garante que o cookie só seja enviado em conexões HTTPS
+            secure: process.env.NODE_ENV === 'production', // Garante que o cookie só seja enviado em conexões HTTPS em produção
             sameSite: 'Strict', // Garante que o cookie só seja enviado no mesmo site
             maxAge: 24 * 60 * 60 * 1000 // Define a expiração para 1 dia (em milissegundos)
         });
@@ -70,7 +70,7 @@ const serviceControllerUser = {
             nickname: checkUser.nickname,
             patent: checkUser.patent,
             classes: checkUser.classes,
-            teans: checkUser.teans, // Corrigido de 'teans' para 'teams'
+            teams: checkUser.teams, // Corrigido de 'teans' para 'teams'
             status: checkUser.status,
             userType: checkUser.userType,
             ip: ipAddress
@@ -81,7 +81,6 @@ const serviceControllerUser = {
         res.status(500).json({ msg: "Erro ao efetuar o login." });
     }
 },
-
 
   updateUser: async (req, res) => {
     try {
