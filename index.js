@@ -32,16 +32,17 @@ connectdb();
 
 app.use('/api', router);
 
-// Cron para limpeza de tokens
-cron.schedule('0 0 */3 * *', () => {
-  console.log('Executando tarefa de limpeza de tokens');
-  clearTokens();
-});
-
+// Middleware de autorização
 // Exemplo de uso do middleware de autorização
 app.get('/api/recurso-protegido', authGuard(['admin', 'user']), (req, res) => {
   // Rota protegida que requer autenticação e autorização
   res.json({ message: 'Acesso permitido!' });
+});
+
+// Cron para limpeza de tokens
+cron.schedule('0 0 */3 * *', () => {
+  console.log('Executando tarefa de limpeza de tokens');
+  clearTokens();
 });
 
 // Servidor HTTP
