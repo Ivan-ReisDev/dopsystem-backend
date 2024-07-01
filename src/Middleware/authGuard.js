@@ -5,13 +5,8 @@ const jwt = require("jsonwebtoken");
 const authGuard = (requiredRoles) => {
     return async (req, res, next) => {
         try {
-            // Obter o token do cabeçalho de autorização
-            const authHeader = req.headers["authorization"];
-            if (!authHeader) {
-                return res.status(401).json({ errors: ["Acesso negado!"] });
-            }
-
-            const token = authHeader.split(" ")[1];
+            // Obter o token do cookie HttpOnly
+            const token = req.cookies.token;
             if (!token) {
                 return res.status(401).json({ errors: ["Acesso negado!"] });
             }
@@ -27,8 +22,15 @@ const authGuard = (requiredRoles) => {
             // Verificar o token usando a chave secreta
             const verified = jwt.verify(token, process.env.JWT_SECRET);
 
+            console.log(verified)
             // Adicionar informações do usuário autenticado à requisição (req)
             req.user = await User.findById(verified.id).select("-password");
+
+            if(req.user.tokenActive != token || req.user.tokenIsNotValide.includes(token)){
+                return res.status(403).json({ errors: ["Permissão inválida."] });
+            }
+
+            
             if (!req.user) {
                 return res.status(404).json({ errors: ["Usuário não encontrado."] });
             }

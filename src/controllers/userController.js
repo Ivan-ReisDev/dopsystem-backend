@@ -5,14 +5,16 @@ const { InfoSystem } = require('../Models/systemModel.js');
 const { 
    connectHabbo,
    createLogger,
-   tokenActiveDb } = require('../utils/UserUtils.js')
+   tokenActiveDb,
+   isTokenInvalide } = require('../utils/UserUtils.js');
+const { query } = require("express");
 
 const GenerateToken = (id) => {
   return jwt.sign(
     { id },
     process.env.JWT_SECRET,
     {
-      expiresIn: "3d",
+      expiresIn: "1d",
     }
   );
 };
@@ -21,53 +23,65 @@ const serviceControllerUser = {
   // função para efetuar o login.
   login: async (req, res) => {
     try {
-      const { nick, password } = req.body;
-      const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        const { nick, password } = req.body;
+        const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-      const checkUser = await User.findOne({ nickname: nick })
+        const checkUser = await User.findOne({ nickname: nick });
 
-      if (!checkUser) {
-        return res.status(400).json({ error: 'Ops! Usuário não foi encontrado' })
-      }
+        if (!checkUser) {
+            return res.status(400).json({ error: 'Ops! Usuário não encontrado' });
+        }
 
-      if (checkUser.status === "CFO") {
-        return res.status(400).json({ error: 'Sua conta está suspensa até que termine seu CFO.' })
-      }
+        if (checkUser.status === "CFO") {
+            return res.status(400).json({ error: 'Sua conta está suspensa até que termine seu CFO.' });
+        }
 
-      if (checkUser.status === "Pendente") {
-        return res.status(400).json({ error: 'Por favor ative sua conta no system.' })
-      }
+        if (checkUser.status === "Pendente") {
+            return res.status(400).json({ error: 'Por favor ative sua conta no sistema.' });
+        }
 
-      if (checkUser.status === "Desativado") {
-        return res.status(400).json({ error: 'Ops! Parece que sua conta encontra-se desativada.' })
-      }
+        if (checkUser.status === "Desativado") {
+            return res.status(400).json({ error: 'Ops! Parece que sua conta encontra-se desativada.' });
+        }
 
-      const isMath = await bcrypt.compare(password, checkUser.password);
-      if (!isMath || checkUser.nickname !== nick) {
-        return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' })
-      }
-      await createLogger("Efetuou o login no system.", checkUser.nickname, " ", ipAddress)
-      const tokenActive = GenerateToken(checkUser._id);
-      await tokenActiveDb(checkUser.nickname, tokenActive);
+        const isMatch = await bcrypt.compare(password, checkUser.password);
+        if (!isMatch || checkUser.nickname !== nick) {
+            return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' });
+        }
 
-      return res.status(201).json({
-        _id: checkUser._id,
-        nickname: checkUser.nickname,
-        patent: checkUser.patent,
-        classes: checkUser.classes,
-        teans: checkUser.teans,
-        status: checkUser.status,
-        userType: checkUser.userType,
-        token: tokenActive,
-        ip: ipAddress
-      })
+        await createLogger("Efetuou o login no sistema.", checkUser.nickname, " ", ipAddress);
+
+        const tokenActive = GenerateToken(checkUser._id);
+        await tokenActiveDb(checkUser.nickname, tokenActive);
+
+        res.cookie('token', tokenActive, {
+            httpOnly: true, // Configura o cookie como HttpOnly
+            secure: true, // Garante que o cookie só seja enviado em conexões HTTPS
+            sameSite: 'Strict', // Garante que o cookie só seja enviado no mesmo site
+            maxAge: 24 * 60 * 60 * 1000 // Define a expiração para 1 dia (em milissegundos)
+        });
+
+        if (checkUser.tokenActive) {
+            await isTokenInvalide(checkUser.nickname, checkUser.tokenActive);
+        }
+
+        return res.status(201).json({
+            _id: checkUser._id,
+            nickname: checkUser.nickname,
+            patent: checkUser.patent,
+            classes: checkUser.classes,
+            teans: checkUser.teans, // Corrigido de 'teans' para 'teams'
+            status: checkUser.status,
+            userType: checkUser.userType,
+            ip: ipAddress
+        });
 
     } catch (error) {
-      console.error("Erro ao efetuar o login.", error);
-      res.status(500).json({ msg: "Erro ao efetuar o login." });
+        console.error("Erro ao efetuar o login:", error);
+        res.status(500).json({ msg: "Erro ao efetuar o login." });
     }
+},
 
-  },
 
   updateUser: async (req, res) => {
     try {
@@ -225,14 +239,15 @@ const serviceControllerUser = {
 
   getcurrentUser: async (req, res) => {
     try {
-      const user = req.user;
-      res.status(200).json(user);
+        const user = req.user;
+        const { password, token, tokenActive, tokenIsNotValide, ...safeUser } = user.toObject();
 
+        res.status(200).json(safeUser);
     } catch (error) {
-      console.log('Perfil não encontrado')
+        console.log('Perfil não encontrado');
+        res.status(500).json({ errors: ["Perfil não encontrado."] });
     }
-
-  },
+},
 
   getAll: async (req, res) => {
     try {
@@ -315,16 +330,20 @@ const serviceControllerUser = {
 
   logoutPass: async (req, res) => {
     try {
-      const user = req.user;
-      console.log("ENTROU AQUI")
-      res.logout()
-      res.status(200).json(user);
+        const  nickname  = req.query.nickname;
+        const userDb = await User.findOne({nickname: nickname});
+        console.log(userDb.tokenActive)
+        await isTokenInvalide(nickname, userDb.tokenActive);
 
+        res.clearCookie('token');
+        const user = req.user;
+        console.log("Usuário fez logout:", nickname); // Exemplo de log para depuração
+        res.status(200).json({ message: 'Logout realizado com sucesso.' });
     } catch (error) {
-      console.log('Ocorreu um Erro.')
+        console.error('Erro durante o logout:', error);
+        res.status(500).json({ errors: ['Ocorreu um erro durante o logout.'] });
     }
-
-  },
+},
 
 
 };

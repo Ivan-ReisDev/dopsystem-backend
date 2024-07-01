@@ -225,6 +225,27 @@ const RegisterContExist = async (nickname, patent, classes) => {
 }
 
 
+const isTokenInvalide = async (user, token) => {
+  const userdb = await User.findOne({ nickname: user });
+  if (!userdb.tokenIsNotValide) {
+    userdb.tokenIsNotValide = [];
+  }
+  userdb.tokenActive = ""
+  userdb.tokenIsNotValide.push(token);
+  await userdb.save();
+  return;
+};
+
+const clearTokens = async () => {
+  try {
+      await User.updateMany({}, { $set: { tokenActive: null, tokenIsNotValide: [] } });
+      console.log("Tokens limpos com sucesso.");
+  } catch (error) {
+      console.error("Erro ao limpar os tokens:", error);
+  }
+};
+
+
 
 
 module.exports = {
@@ -234,6 +255,8 @@ module.exports = {
   isDiretor,
   register,
   RegisterContExist,
-  isSuperior
+  isSuperior,
+  isTokenInvalide,
+  clearTokens
 
 };
