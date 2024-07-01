@@ -1,14 +1,27 @@
-const { User } = require('../Models/userModel'); // Corrigido: caminho do modelo de usuário
+const { User } = require('../Models/useModel');
 const jwt = require("jsonwebtoken");
 
 // Middleware de autorização
 const authGuard = (requiredRoles) => {
     return async (req, res, next) => {
         try {
-            // Obter o token do cookie HttpOnly
-            const token = req.cookies.token;
+            // Obter o token do cabeçalho de autorização
+            const authHeader = req.headers["authorization"];
+            if (!authHeader) {
+                return res.status(401).json({ errors: ["Acesso negado!"] });
+            }
+
+            const token = authHeader.split(" ")[1];
             if (!token) {
                 return res.status(401).json({ errors: ["Acesso negado!"] });
+            }
+
+            // Log do token para depuração
+            console.log("Token recebido:", token);
+
+            // Verificar se o token tem o formato correto
+            if (token.split('.').length !== 3) {
+                return res.status(400).json({ errors: ["Token malformado."] });
             }
 
             // Verificar o token usando a chave secreta
@@ -16,10 +29,8 @@ const authGuard = (requiredRoles) => {
 
             // Adicionar informações do usuário autenticado à requisição (req)
             req.user = await User.findById(verified.id).select("-password");
-
-            // Verificar se o token é válido para o usuário
-            if (!req.user || req.user.tokenActive !== token || req.user.tokenIsNotValid.includes(token)) {
-                return res.status(403).json({ errors: ["Permissão inválida."] });
+            if (!req.user) {
+                return res.status(404).json({ errors: ["Usuário não encontrado."] });
             }
 
             // Verificar se o usuário tem uma das permissões necessárias
