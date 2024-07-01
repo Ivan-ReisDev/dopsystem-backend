@@ -16,7 +16,7 @@ const app = express();
 
 // Configuração do CORS para permitir requisições do domínio 'https://policiadop.com.br'
 const corsOptions = {
-  origin: 'https://policiadop.com.br',
+  origin: '*',
   credentials: true, // Permite incluir cookies na requisição
   optionsSuccessStatus: 200 // Algumas versões de navegadores antigos (como o IE) requerem isso para funcionar corretamente
 };
