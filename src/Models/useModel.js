@@ -56,11 +56,6 @@ const userSchema = new mongoose.Schema({
     tokenActive: {
         type: String,
     },
-
-    tokenIsNotValide: {
-        type: Array, 
-        
-    }
 },{ timestamps: true })
 
 
