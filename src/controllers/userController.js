@@ -70,7 +70,7 @@ const serviceControllerUser = {
             nickname: checkUser.nickname,
             patent: checkUser.patent,
             classes: checkUser.classes,
-            teams: checkUser.teams, // Corrigido de 'teans' para 'teams'
+            teans: checkUser.teans, // Corrigido de 'teans' para 'teams'
             status: checkUser.status,
             userType: checkUser.userType,
             ip: ipAddress
