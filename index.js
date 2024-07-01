@@ -7,15 +7,16 @@ const https = require("https");
 const router = require("./src/routes/service");
 const cron = require('node-cron');
 const { clearTokens } = require('./src/utils/UserUtils.js');
+const authGuard = require('./src/middlewares/authGuard'); // Importe o middleware de autorização
 
 const port = process.env.PORT_APP || 3000;
 const httpsPort = 443;
 
 const app = express();
 
-// Configuração do CORS
+// Configuração do CORS para permitir requisições do domínio 'https://policiadop.com.br'
 const corsOptions = {
-  origin: 'https://policiadop.com.br', // Altere para o domínio do seu site
+  origin: 'https://policiadop.com.br',
   credentials: true, // Permite incluir cookies na requisição
   optionsSuccessStatus: 200 // Algumas versões de navegadores antigos (como o IE) requerem isso para funcionar corretamente
 };
@@ -35,6 +36,12 @@ app.use('/api', router);
 cron.schedule('0 0 */3 * *', () => {
   console.log('Executando tarefa de limpeza de tokens');
   clearTokens();
+});
+
+// Exemplo de uso do middleware de autorização
+app.get('/api/recurso-protegido', authGuard(['admin', 'user']), (req, res) => {
+  // Rota protegida que requer autenticação e autorização
+  res.json({ message: 'Acesso permitido!' });
 });
 
 // Servidor HTTP
