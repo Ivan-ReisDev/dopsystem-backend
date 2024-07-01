@@ -32,12 +32,10 @@ const authGuard = (requiredRoles) => {
             if (!req.user) {
                 return res.status(404).json({ errors: ["Usuário não encontrado."] });
             }
-
             // Verificar se o usuário tem uma das permissões necessárias
             if (!requiredRoles.includes(req.user.userType)) {
                 return res.status(403).json({ errors: ["Permissão insuficiente."] });
             }
-
             // Chamar o próximo middleware
             next();
         } catch (err) {
