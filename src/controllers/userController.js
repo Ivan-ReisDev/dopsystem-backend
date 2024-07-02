@@ -22,62 +22,66 @@ const serviceControllerUser = {
   login: async (req, res) => {
     try {
       const { nick, password } = req.body;
-      const origin = req.headers
+      const origin = req.headers;
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-      console.log(origin)
+      console.log(origin);
       const checkUser = await User.findOne({ nickname: nick });
 
       if (!checkUser) {
-        return res.status(400).json({ error: 'Usuário não encontrado.' });
+          return res.status(400).json({ error: 'Usuário não encontrado.' });
       }
 
       if (checkUser.status === "CFO") {
-        return res.status(400).json({ error: 'Sua conta está suspensa até que termine seu CFO.' });
+          return res.status(400).json({ error: 'Sua conta está suspensa até que termine seu CFO.' });
       }
 
       if (checkUser.status === "Pendente") {
-        return res.status(400).json({ error: 'Por favor ative sua conta no sistema.' });
+          return res.status(400).json({ error: 'Por favor ative sua conta no sistema.' });
       }
 
       if (checkUser.status === "Desativado") {
-        return res.status(400).json({ error: 'Sua conta está desativada.' });
+          return res.status(400).json({ error: 'Sua conta está desativada.' });
       }
 
       const isMatch = await bcrypt.compare(password, checkUser.password);
       if (!isMatch || checkUser.nickname !== nick) {
-        return res.status(400).json({ error: 'Nickname ou senha incorretos.' });
+          return res.status(400).json({ error: 'Nickname ou senha incorretos.' });
       }
 
       await createLogger("Efetuou o login no sistema.", checkUser.nickname, " ", ipAddress);
       const tokenActive = GenerateToken(checkUser._id);
       await tokenActiveDb(checkUser.nickname, tokenActive);
 
-      res.cookie('tokenDOP', tokenActive, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'None',
-        maxAge: 24 * 60 * 60 * 1000,
-        domain: 'policiadop.com.br'
-      });
-      
+      // Construir o cabeçalho Set-Cookie manualmente
+      const cookieOptions = [
+          'tokenDOP=' + tokenActive,
+          'HttpOnly',
+          'Secure',
+          'SameSite=None',
+          'Max-Age=' + 24 * 60 * 60, // 1 dia em segundos
+          'Domain=policiadop.com.br',
+          'Path=/'
+      ];
+
+      res.setHeader('Set-Cookie', cookieOptions.join('; '));
 
       return res.status(201).json({
-        _id: checkUser._id,
-        nickname: checkUser.nickname,
-        patent: checkUser.patent,
-        classes: checkUser.classes,
-        teans: checkUser.teans,
-        status: checkUser.status,
-        userType: checkUser.userType,
-        token: tokenActive,
-        ip: ipAddress
+          _id: checkUser._id,
+          nickname: checkUser.nickname,
+          patent: checkUser.patent,
+          classes: checkUser.classes,
+          teans: checkUser.teans,
+          status: checkUser.status,
+          userType: checkUser.userType,
+          token: tokenActive,
+          ip: ipAddress
       });
 
-    } catch (error) {
+  } catch (error) {
       console.error("Erro ao efetuar o login:", error);
       res.status(500).json({ msg: "Erro ao efetuar o login." });
-    }
+  }
   },
 
   updateUser: async (req, res) => {
