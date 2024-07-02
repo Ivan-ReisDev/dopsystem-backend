@@ -1,6 +1,7 @@
 const { User } = require("../Models/useModel.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const cookie = require('cookie');
 const { InfoSystem } = require('../Models/systemModel.js');
 const { 
    connectHabbo,
@@ -18,44 +19,44 @@ const GenerateToken = (id) => {
 };
 
 const serviceControllerUser = {
-  // função para efetuar o login.
   login: async (req, res) => {
     try {
       const { nick, password } = req.body;
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-      const checkUser = await User.findOne({ nickname: nick })
+      const checkUser = await User.findOne({ nickname: nick });
 
       if (!checkUser) {
-        return res.status(400).json({ error: 'Ops! Usuário não foi encontrado' })
+        return res.status(400).json({ error: 'Usuário não encontrado.' });
       }
 
       if (checkUser.status === "CFO") {
-        return res.status(400).json({ error: 'Sua conta está suspensa até que termine seu CFO.' })
+        return res.status(400).json({ error: 'Sua conta está suspensa até que termine seu CFO.' });
       }
 
       if (checkUser.status === "Pendente") {
-        return res.status(400).json({ error: 'Por favor ative sua conta no system.' })
+        return res.status(400).json({ error: 'Por favor ative sua conta no sistema.' });
       }
 
       if (checkUser.status === "Desativado") {
-        return res.status(400).json({ error: 'Ops! Parece que sua conta encontra-se desativada.' })
+        return res.status(400).json({ error: 'Sua conta está desativada.' });
       }
 
-      const isMath = await bcrypt.compare(password, checkUser.password);
-      if (!isMath || checkUser.nickname !== nick) {
-        return res.status(400).json({ error: 'Ops! Nickname ou senha incorreto.' })
+      const isMatch = await bcrypt.compare(password, checkUser.password);
+      if (!isMatch || checkUser.nickname !== nick) {
+        return res.status(400).json({ error: 'Nickname ou senha incorretos.' });
       }
-      await createLogger("Efetuou o login no system.", checkUser.nickname, " ", ipAddress)
+
+      await createLogger("Efetuou o login no sistema.", checkUser.nickname, " ", ipAddress);
       const tokenActive = GenerateToken(checkUser._id);
       await tokenActiveDb(checkUser.nickname, tokenActive);
 
       res.cookie('token', tokenActive, {
-        httpOnly: true, // Configura o cookie como HttpOnly
-        secure: true, // Garante que o cookie só seja enviado em conexões HTTPS
-        sameSite: 'None', // Garante que o cookie seja enviado em todos os contextos (cross-site)
-        maxAge: 24 * 60 * 60 * 1000 // Define a expiração para 1 dia (em milissegundos)
-    });
+        httpOnly: true, // Cookie acessível apenas pelo servidor
+        secure: true, // Cookie enviado apenas em conexões HTTPS
+        sameSite: 'None', // Permitido em todos os contextos
+        maxAge: 24 * 60 * 60 * 1000 // Expira em 1 dia
+      });
 
       return res.status(201).json({
         _id: checkUser._id,
@@ -67,13 +68,12 @@ const serviceControllerUser = {
         userType: checkUser.userType,
         token: tokenActive,
         ip: ipAddress
-      })
+      });
 
     } catch (error) {
-      console.error("Erro ao efetuar o login.", error);
+      console.error("Erro ao efetuar o login:", error);
       res.status(500).json({ msg: "Erro ao efetuar o login." });
     }
-
   },
 
   updateUser: async (req, res) => {
@@ -332,20 +332,16 @@ const serviceControllerUser = {
 
   },
 
-
-
   logoutPass: async (req, res) => {
     try {
       res.clearCookie('token'); // Limpa o cookie 'token'
       res.status(200).json({ message: 'Logout realizado com sucesso.' });
   
     } catch (error) {
-      console.log('Ocorreu um erro ao fazer logout:', error);
+      console.error('Erro ao fazer logout:', error);
       res.status(500).json({ error: 'Erro ao fazer logout.' });
     }
   },
-
-
 };
 
 module.exports = serviceControllerUser;
