@@ -58,7 +58,7 @@ const serviceControllerUser = {
         secure: true,
         sameSite: 'None',
         maxAge: 24 * 60 * 60 * 1000,
-        domain: 'policiadop.com.br'
+        domain: 'https://policiadop.com.br'
       });
       
 
