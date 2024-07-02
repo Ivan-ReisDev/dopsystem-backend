@@ -58,7 +58,7 @@ const serviceControllerUser = {
         secure: true, // Certifique-se de que está usando HTTPS
         sameSite: 'None', // Permite cookies em requisições cross-origin
         path: '/',
-        maxAge: 24 * 60 * 60 * 1000 
+        maxAge: 24 * 60 * 60 * 1000, 
         domain: 'policiadop.com.br'
       });
       
