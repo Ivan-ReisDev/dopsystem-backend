@@ -55,8 +55,10 @@ const serviceControllerUser = {
         httpOnly: true, // Cookie acessível apenas pelo servidor
         secure: true, // Cookie enviado apenas em conexões HTTPS
         sameSite: 'None', // Permitido em todos os contextos
-        maxAge: 24 * 60 * 60 * 1000 // Expira em 1 dia
+        maxAge: 24 * 60 * 60 * 1000, // Expira em 1 dia
+        domain: 'policiadop.com.br' // Atrela o cookie ao domínio específico
       });
+      
 
       return res.status(201).json({
         _id: checkUser._id,
