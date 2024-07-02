@@ -3,7 +3,6 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const fs = require("fs");
 const https = require("https");
-const cron = require('node-cron');
 const cookieParser = require('cookie-parser'); 
 const router = require("./src/routes/service");
 
