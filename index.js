@@ -15,6 +15,7 @@ const app = express();
 // Configuração do CORS
 app.use(cors({
   origin: 'https://policiadop.com.br', // Altere para o domínio da sua aplicação cliente
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true  // Permite incluir cookies na requisição
 }));
 
@@ -23,12 +24,13 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
-  res.header("Access-Control-Expose-Headers", "Content-Type");
-  next();
-});
+// Removido: Cabeçalhos CORS duplicados, o middleware `cors` já cuida disso
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "/");
+//   res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
+//   res.header("Access-Control-Expose-Headers", "Content-Type");
+//   next();
+// });
 
 const connectdb = require('./src/DB/connect.js');
 connectdb();
