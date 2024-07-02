@@ -55,9 +55,10 @@ const serviceControllerUser = {
 
       res.cookie('token', tokenActive, {
         httpOnly: true,
-        secure: true,
-        sameSite: 'None',
-        maxAge: 24 * 60 * 60 * 1000,
+        secure: true, // Certifique-se de que está usando HTTPS
+        sameSite: 'None', // Permite cookies em requisições cross-origin
+        path: '/',
+        maxAge: 24 * 60 * 60 * 1000 
         // domain: 'policiadop.com.br'
       });
       
