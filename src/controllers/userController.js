@@ -59,7 +59,7 @@ const serviceControllerUser = {
         sameSite: 'None', // Permite cookies em requisições cross-origin
         path: '/',
         maxAge: 24 * 60 * 60 * 1000 
-        // domain: 'policiadop.com.br'
+        domain: 'policiadop.com.br'
       });
       
 
