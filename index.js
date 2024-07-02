@@ -24,14 +24,6 @@ app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
-// Removido: Cabeçalhos CORS duplicados, o middleware `cors` já cuida disso
-// app.use((req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", "/");
-//   res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
-//   res.header("Access-Control-Expose-Headers", "Content-Type");
-//   next();
-// });
-
 const connectdb = require('./src/DB/connect.js');
 connectdb();
 
