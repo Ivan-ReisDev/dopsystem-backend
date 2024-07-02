@@ -12,7 +12,7 @@ const app = express();
 const corsOptions = {
   origin: 'https://policiadop.com.br',
   methods: ['GET', 'POST', 'DELETE', "PUT"],
-  allowedHeaders: ['Content-Type'],
+  allowedHeaders: ['Content-Type','Authorization'],
   credentials: true // Habilita cookies através de domínios
 };
 
