@@ -322,7 +322,7 @@ const serviceControllerUser = {
     try {
       const token = req.cookies.token;
       
-      console.log("ENTROU AQUI" + token)
+      console.log("ENTROU AQUI " + token)
 
       return res.status(500).json({ message: token });
 
