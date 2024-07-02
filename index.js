@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser'); 
+const cookieParser = require('cookie-parser');
 const router = require("./src/routes/service");
 
 const port = process.env.PORT_APP || 3000;
@@ -9,10 +9,12 @@ const port = process.env.PORT_APP || 3000;
 const app = express();
 
 // Configuração do CORS
-app.use(cors({
-  origin: 'https://policiadop.com.br', // Altere para o domínio da sua aplicação cliente
-  credentials: true  // Permite incluir cookies na requisição
-}));
+const corsOptions = {
+  origin: 'https://policiadop.com.br', // Permite apenas esta origem
+  credentials: true  // Permite incluir cookies nas requisições
+};
+
+app.use(cors(corsOptions));
 
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
@@ -28,6 +30,10 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  // Se a requisição for um OPTIONS, envie a resposta imediatamente
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
   next();
 });
 
