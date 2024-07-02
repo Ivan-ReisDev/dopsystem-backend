@@ -53,12 +53,12 @@ const serviceControllerUser = {
       const tokenActive = GenerateToken(checkUser._id);
       await tokenActiveDb(checkUser.nickname, tokenActive);
 
-      res.cookie('token', tokenActive, {
+      res.cookie('tokenDOP', tokenActive, {
         httpOnly: true,
         secure: true,
         sameSite: 'None',
         maxAge: 24 * 60 * 60 * 1000,
-        domain: 'https://policiadop.com.br'
+        domain: 'policiadop.com.br'
       });
       
 
