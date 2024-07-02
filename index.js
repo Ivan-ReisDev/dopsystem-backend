@@ -11,13 +11,27 @@ const app = express();
 
 const corsOptions = {
   origin: 'https://policiadop.com.br',
-  methods: ['GET', 'POST', 'DELETE', "PUT"],
-  allowedHeaders: ['Content-Type','Authorization'],
+  methods: ['GET', 'POST', 'DELETE', 'PUT'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true // Habilita cookies através de domínios
 };
 
 // Configuração do CORS
 app.use(cors(corsOptions));
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", 'https://policiadop.com.br');
+  res.header("Access-Control-Allow-Methods", 'GET, POST, DELETE, PUT');
+  res.header("Access-Control-Allow-Headers", 'Content-Type, Authorization');
+  res.header("Access-Control-Allow-Credentials", 'true');
+  
+  // Para lidar com requisições OPTIONS (preflight)
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
 
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
