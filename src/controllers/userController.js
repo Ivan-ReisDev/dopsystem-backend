@@ -53,7 +53,7 @@ const serviceControllerUser = {
       res.cookie('token', tokenActive, {
         httpOnly: true, // Configura o cookie como HttpOnly
         secure: true, // Garante que o cookie só seja enviado em conexões HTTPS
-        sameSite: 'Strict', // Garante que o cookie só seja enviado no mesmo site
+        sameSite: 'None', // Garante que o cookie seja enviado em todos os contextos (cross-site)
         maxAge: 24 * 60 * 60 * 1000 // Define a expiração para 1 dia (em milissegundos)
     });
 
