@@ -336,15 +336,13 @@ const serviceControllerUser = {
 
   logoutPass: async (req, res) => {
     try {
-      const user = req.user;
-      console.log("ENTROU AQUI")
-      res.logout()
-      res.status(200).json(user);
-
+      res.clearCookie('token'); // Limpa o cookie 'token'
+      res.status(200).json({ message: 'Logout realizado com sucesso.' });
+  
     } catch (error) {
-      console.log('Ocorreu um Erro.')
+      console.log('Ocorreu um erro ao fazer logout:', error);
+      res.status(500).json({ error: 'Erro ao fazer logout.' });
     }
-
   },
 
 
