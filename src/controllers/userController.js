@@ -22,8 +22,10 @@ const serviceControllerUser = {
   login: async (req, res) => {
     try {
       const { nick, password } = req.body;
+      const origin = req.get('Origin')
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
+      console.log(origin)
       const checkUser = await User.findOne({ nickname: nick });
 
       if (!checkUser) {
