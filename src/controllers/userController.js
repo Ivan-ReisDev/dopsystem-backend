@@ -339,7 +339,7 @@ const serviceControllerUser = {
 
   logoutPass: async (req, res) => {
     try {
-      res.clearCookie('tokenDOP'); // Limpa o cookie 'token'
+      res.clearCookie('token'); // Limpa o cookie 'token'
       res.status(200).json({ message: 'Logout realizado com sucesso.' });
   
     } catch (error) {
