@@ -324,7 +324,7 @@ const serviceControllerUser = {
       
       console.log("ENTROU AQUI" + token)
 
-     return res.status(200).json("ESSA É A RESPOSTAAAAAAAAA DEU CERTOOOOOOOOOOO", token);
+      return res.status(500).json({ message: token });
 
     } catch (error) {
       console.log('Ocorreu um Erro.')
