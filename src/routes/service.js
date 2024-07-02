@@ -18,9 +18,11 @@ const serviceControllerEndorsement = require("../controllers/endorsementControll
 // router.route('/register').post((req, res) => serviceControllerUser.register(req, res))
 router.route('/login').post((req, res) => serviceControllerUser.login(req, res))
 router.route('/users/update').put((req, res) => serviceControllerUser.updateUser(req, res))
-router.route('/logout').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']), getcurrentUser, (req, res) => serviceControllerUser.logoutPass(req, res))
+router.route('/logout').get(getcurrentUser, (req, res) => serviceControllerUser.logoutPass(req, res))
 
 // Rotas privadas 
+router.route('/teste').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']), (req, res) => serviceControllerUser.Teste(req, res))
+
 router.route('/all/users').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']), (req, res) => serviceControllerUser.getAll(req, res))
 router.route('/user/delete/:userId').delete(authGuard(['Admin']), getcurrentUser,(req, res) => serviceControllerUser.deleteUsers(req, res))
 router.route('/profile').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']), getcurrentUser, (req, res) => serviceControllerUser.getAll(req, res));

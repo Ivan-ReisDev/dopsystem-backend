@@ -50,6 +50,13 @@ const serviceControllerUser = {
       const tokenActive = GenerateToken(checkUser._id);
       await tokenActiveDb(checkUser.nickname, tokenActive);
 
+      res.cookie('token', tokenActive, {
+        httpOnly: true, // Configura o cookie como HttpOnly
+        secure: true, // Garante que o cookie só seja enviado em conexões HTTPS
+        sameSite: 'Strict', // Garante que o cookie só seja enviado no mesmo site
+        maxAge: 24 * 60 * 60 * 1000 // Define a expiração para 1 dia (em milissegundos)
+    });
+
       return res.status(201).json({
         _id: checkUser._id,
         nickname: checkUser.nickname,
@@ -309,6 +316,20 @@ const serviceControllerUser = {
       console.log(error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
+  },
+
+  Teste: async (req, res) => {
+    try {
+      const token = req.cookies.token;
+      
+      console.log("ENTROU AQUI" + token)
+
+     return res.status(200).json(token);
+
+    } catch (error) {
+      console.log('Ocorreu um Erro.')
+    }
+
   },
 
 

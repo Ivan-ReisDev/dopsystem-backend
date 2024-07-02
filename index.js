@@ -3,6 +3,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const fs = require("fs");
 const https = require("https");
+const cron = require('node-cron');
+const cookieParser = require('cookie-parser'); 
 const router = require("./src/routes/service");
 
 const port = process.env.PORT_APP || 3000;
@@ -19,6 +21,14 @@ app.use(cors({
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.json());
+app.use(cookieParser());
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
+  res.header("Access-Control-Expose-Headers", "Content-Type");
+  next();
+});
 
 const connectdb = require('./src/DB/connect.js');
 connectdb();
