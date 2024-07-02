@@ -324,7 +324,7 @@ const serviceControllerUser = {
 
   Teste: async (req, res) => {
     try {
-      const token = req.cookies.token;
+      const token = req.cookie;
       
       console.log("ENTROU AQUI " + token)
 
