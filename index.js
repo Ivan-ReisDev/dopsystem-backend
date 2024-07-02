@@ -9,29 +9,11 @@ const port = process.env.PORT_APP || 3000;
 
 const app = express();
 
-const corsOptions = {
-  origin: '*',
-  methods: ['GET', 'POST', 'DELETE', 'PUT'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true // Habilita cookies através de domínios
-};
-
 // Configuração do CORS
-app.use(cors(corsOptions));
-
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", '*');
-  res.header("Access-Control-Allow-Methods", 'GET, POST, DELETE, PUT');
-  res.header("Access-Control-Allow-Headers", 'Content-Type, Authorization');
-  res.header("Access-Control-Allow-Credentials", 'true');
-  
-  // Para lidar com requisições OPTIONS (preflight)
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-
-  next();
-});
+app.use(cors({
+  origin: '*', // Altere para o domínio da sua aplicação cliente
+  credentials: true  // Permite incluir cookies na requisição
+}));
 
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
