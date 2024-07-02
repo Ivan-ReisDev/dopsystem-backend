@@ -52,11 +52,11 @@ const serviceControllerUser = {
       await tokenActiveDb(checkUser.nickname, tokenActive);
 
       res.cookie('token', tokenActive, {
-        httpOnly: true, // Cookie acessível apenas pelo servidor
-        secure: true, // Cookie enviado apenas em conexões HTTPS
-        sameSite: 'None', // Permitido em todos os contextos
-        maxAge: 24 * 60 * 60 * 1000, // Expira em 1 dia
-        domain: 'policiadop.com.br' // Atrela o cookie ao domínio específico
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+        maxAge: 24 * 60 * 60 * 1000,
+        domain: 'policiadop.com.br'
       });
       
 
