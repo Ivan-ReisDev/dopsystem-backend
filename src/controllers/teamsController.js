@@ -331,7 +331,8 @@ const serviceControllerTeams = {
 
     updateTeams: async (req, res) => {
         try {
-            const { idUser, teamsId, nameTeams, leader, viceLeader, members } = req.body;
+            const idUser = req.idUser;
+            const { teamsId, nameTeams, leader, viceLeader, members } = req.body;
     
             if (!teamsId || !nameTeams || !leader || !viceLeader) {
                 return res.status(422).json({ error: 'Preencha todos os campos obrigatórios.' });

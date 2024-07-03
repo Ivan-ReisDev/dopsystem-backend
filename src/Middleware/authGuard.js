@@ -27,6 +27,8 @@ const authGuard = (requiredRoles) => {
 
             // Verificar o token usando a chave secreta
             const verified = jwt.verify(token, process.env.JWT_SECRET);
+            const { id } = verified;
+            req.idUser = id;
 
             // Adicionar informações do usuário autenticado à requisição (req)
             req.user = await User.findById(verified.id).select("-password");

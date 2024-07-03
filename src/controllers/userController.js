@@ -1,12 +1,12 @@
 const { User } = require("../Models/useModel.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const cookie = require('cookie');
 const { InfoSystem } = require('../Models/systemModel.js');
 const { 
    connectHabbo,
    createLogger,
-   tokenActiveDb } = require('../utils/UserUtils.js')
+   tokenActiveDb } = require('../utils/UserUtils.js');
+const { use } = require("../routes/Auth.js");
 
 const GenerateToken = (id) => {
   return jwt.sign(
@@ -52,16 +52,6 @@ const serviceControllerUser = {
       await createLogger("Efetuou o login no sistema.", checkUser.nickname, " ", ipAddress);
       const tokenActive = GenerateToken(checkUser._id);
       await tokenActiveDb(checkUser.nickname, tokenActive);
-
-      res.cookie('token', tokenActive, {
-        httpOnly: true,
-        secure: true, // Certifique-se de que está usando HTTPS
-        sameSite: 'None', // Permite cookies em requisições cross-origin
-        path: '/',
-        maxAge: 24 * 60 * 60 * 1000, 
-        domain: 'policiadop.com.br'
-      });
-      
 
       return res.status(201).json({
         _id: checkUser._id,
@@ -237,6 +227,7 @@ const serviceControllerUser = {
 
   getcurrentUser: async (req, res) => {
     try {
+      const userID = req.idUser;
       const user = req.user;
       res.status(200).json(user);
 
@@ -248,6 +239,7 @@ const serviceControllerUser = {
 
   getAll: async (req, res) => {
     try {
+        
         const page = parseInt(req.query.page) || 1;
         const pageSize = parseInt(req.query.pageSize) || 10;
         const nickname = req.query.nickname; // Captura o nickname da query string
@@ -323,26 +315,9 @@ const serviceControllerUser = {
     }
   },
 
-  Teste: async (req, res) => {
-    try {
-        const token = req.cookies.token;  // Corrigido para acessar o cookie correto
-
-        console.log(req.cookies);  // Corrigido para acessar todos os cookies
-
-        return res.status(200).json({ message: token });  // Corrigido o status para 200 OK
-
-    } catch (error) {
-        console.log('Ocorreu um Erro.', error);
-        return res.status(500).json({ message: 'Ocorreu um erro.' });  // Adicionado retorno de erro no catch
-    }
-},
-
-
   logoutPass: async (req, res) => {
     try {
-      res.clearCookie('token'); // Limpa o cookie 'token'
       res.status(200).json({ message: 'Logout realizado com sucesso.' });
-  
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
       res.status(500).json({ error: 'Erro ao fazer logout.' });
