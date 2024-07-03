@@ -6,7 +6,6 @@ const {
    connectHabbo,
    createLogger,
    tokenActiveDb } = require('../utils/UserUtils.js');
-const { use } = require("../routes/Auth.js");
 
 const GenerateToken = (id) => {
   return jwt.sign(
