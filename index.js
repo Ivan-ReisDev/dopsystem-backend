@@ -9,13 +9,9 @@ const port = process.env.PORT_APP || 3000;
 
 const app = express();
 
-// Configuração do CORS
-const corsOptions = {
-  origin: 'https://policiadop.com.br', // Permite apenas esta origem
-  credentials: true  // Permite incluir cookies nas requisições
-};
 
-app.use(cors(corsOptions));
+
+app.use(cors());
 
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
