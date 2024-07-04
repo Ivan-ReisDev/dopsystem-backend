@@ -42,7 +42,7 @@ const serviceControllerDocs = {
                 await createClasse(nameDocs, docsType)
             }
     
-            if (nickname && (nickname.userType === "Admin" || nickname.nickname === teams.leader || nickname.userType === "Diretor")) {
+            if (nickname && (nickname.userType === "Admin" || nickname.nickname === teams.leader || nickname.nickname === teams.viceLeader || nickname.userType === "Diretor")) {
                 const newDoc = {
                     nameDocs: nameDocs,
                     content: content,
@@ -126,7 +126,7 @@ const serviceControllerDocs = {
                 return res.status(404).json({ error: 'Ops! Documento não encontrado.' });
             }
     
-            if (userAdmin && (userAdmin.userType === "Admin" || (teams && userAdmin.nickname === teams.leader) || userAdmin.userType === "Diretor")) {
+            if (userAdmin && (userAdmin.userType === "Admin" || (teams && userAdmin.nickname === teams.leader || nickname.nickname === teams.viceLeader ) || userAdmin.userType === "Diretor")) {
                 
                 if (script === true) {
                     await createClasse(nameDocs, docsType);
