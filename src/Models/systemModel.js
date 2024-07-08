@@ -7,6 +7,11 @@ const infoSystemSchema = new mongoose.Schema({
         require: true
     },
 
+    nameOrganization: {
+        type: String,
+        require: true
+    },
+
     patents: {
         type: Array,
         required: true
@@ -20,6 +25,27 @@ const infoSystemSchema = new mongoose.Schema({
     teams: {
         type: Array,
         required: true
+    },
+    
+    emblema: {
+        type: String,
+        require: false
+    }, 
+    destaques1: {
+        type: String,
+        require: false
+    },
+    destaques2: {
+        type: String,
+        require: false
+    },
+    destaques3: {
+        type: String,
+        require: false
+    },
+    destaques4: {
+        type: String,
+        require: false
     },
     
 

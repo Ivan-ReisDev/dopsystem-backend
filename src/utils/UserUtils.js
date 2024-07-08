@@ -1,7 +1,9 @@
 const { Logger } = require('../Models/logsModel');
 const { User } = require("../Models/useModel.js");
+const { DocsSystem } = require("../Models/docsModel.js")
 const { InfoSystem } = require('../Models/systemModel.js')
 const bcrypt = require("bcryptjs");
+const { Teams } = require('../Models/teamsModel.js');
 const apiHabbo = `https://www.habbo.com.br/api/public/users?name=`
 
 // Conecta com a api de usuário do habbo
@@ -224,6 +226,20 @@ const RegisterContExist = async (nickname, patent, classes) => {
   }
 }
 
+const getInfos = async () => {
+  const docs = await DocsSystem.countDocuments();
+  const users = await User.countDocuments({status:{$in:['Ativo', 'Pendente'] }});
+  const usersTotal = await User.countDocuments();
+  const teams = await Teams.countDocuments();
+
+  return {
+    docs,
+    users,
+    usersTotal,
+    teams,
+  }
+}
+
 const isTokenInvalide = async (user, token) => {
   const userdb = await User.findOne({ nickname: user });
   if (!userdb.tokenIsNotValide) {
@@ -254,6 +270,7 @@ module.exports = {
   isDiretor,
   register,
   RegisterContExist,
-  isSuperior
+  isSuperior,
+  getInfos
 
 };
