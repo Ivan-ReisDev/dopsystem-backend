@@ -48,7 +48,7 @@ router.route('/all/info').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos H
 router.route('/create/info').post(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerSystem.createInfo(req, res));
 router.route('/patents').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerSystem.searchUserPatent(req, res))
 router.route('/infos').put(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerSystem.updateInfos(req, res))
-router.route('/infos').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerSystem.getInfoSystemDpanel(req, res))
+router.route('/infos').get((req, res) => serviceControllerSystem.getInfoSystemDpanel(req, res))
 
 router.route('/post/requirement/promoted').post(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerRequirements.createRequirements(req, res));
 router.route('/search/requeriments').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerRequirements.searchRequeriments(req, res))
