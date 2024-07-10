@@ -30,7 +30,7 @@ const authGuard = (requiredRoles) => {
             const { id } = verified;
             req.idUser = id;
             // Adicionar informações do usuário autenticado à requisição (req)
-            req.user = await User.findById(verified.id).select("-password -tokenActive -tokenIsNotValide");
+            req.user = await User.findById(verified.id).select("-password");
             if (!req.user) {
                 return res.status(404).json({ errors: ["Usuário não encontrado."] });
             }
