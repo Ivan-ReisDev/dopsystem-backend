@@ -15,7 +15,7 @@ const serviceControllerRequirements = {
             const nicknamePromoted = await User.findOne({ nickname: promoted });
             const validateSuperior = await isSuperior(nicknameOperator, nicknamePromoted, "Promoção");
             const validete = await isDiretor(nicknameOperator.patent);
-
+            
             if (validateSuperior.isSuperior === true || nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
                     promoted,
