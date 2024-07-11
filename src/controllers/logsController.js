@@ -42,7 +42,17 @@ const serviceControllerLogger = {
         console.error('Erro ao buscar logs', error);
         res.status(500).json({ msg: 'Erro ao buscar logs' });
       }
-    }
+    },
+
+    // deleteLogs: async (req, res) => {
+    //   try {
+    //     await Logger.deleteMany();
+    //     return res.status(200).json({ msg: "Deletado com sucesso" });
+    //   } catch (error) {
+    //     console.error("Erro ao deletar logs:", error);
+    //     return res.status(500).json({ msg: "Erro ao deletar logs" });
+    //   }
+    // },
     
     
 

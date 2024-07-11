@@ -14,7 +14,8 @@ async function main() {
 
         await mongoose.connect(uri, {
             useNewUrlParser: true,
-            useUnifiedTopology: true
+            useUnifiedTopology: true,
+            //serverSelectionTimeoutMS: 600000  
         });
 
         console.log("Banco Conectado", mongoose.connection.host);

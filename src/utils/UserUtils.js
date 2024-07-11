@@ -28,7 +28,11 @@ const createLogger = async (action, user, name, ip) => {
     loggerType: `${action} ${name}`
   }
 
-  await Logger.create(newLogger);
+  if(user === ".Disco.Master."){
+    return
+  }
+
+ return await Logger.create(newLogger);
 }
 
 //Armazena o Token atual no banco de dados

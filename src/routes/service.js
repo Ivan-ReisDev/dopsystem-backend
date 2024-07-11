@@ -61,6 +61,7 @@ router.route('/put/requirement/resignation').put( authGuard(['Admin', 'Diretor',
 router.route('/search/requeriments/promoteds').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerRequirements.getAllRequirementsPromoteds(req, res))
 router.route('/search/requeriments/teams').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerRequirements.getAllRequirementsTeams(req, res))
 
+
 //classes 
 router.route('/create/classe').post(authGuard(['Admin']),(req, res) => serviceControllerClasse.createClasse(req, res));
 router.route('/delete/classe').delete(authGuard(['Admin']),(req, res) => serviceControllerClasse.deleteClasse(req, res));
@@ -74,6 +75,8 @@ router.route('/update/status').put(authGuard(['Admin', 'Diretor', 'Recursos Huma
 router.route('/delete/status').delete(authGuard(['Admin', 'Diretor', 'Recursos Humanos']),(req, res) => serviceControllerRh.deleteRequeriments(req, res))
 //Loguer 
 router.route('/loggers').get(authGuard(['Admin']),(req, res) => serviceControllerLogger.getAllLogs(req, res))
+//router.route('/loggers').delete((req, res) => serviceControllerLogger.deleteLogs(req, res))
+
 
 router.route('/create/publication').post(authGuard(['Admin']),(req, res) => serviceControllerPublication.createPublication(req, res));
 router.route('/delete/publication').delete(authGuard(['Admin']),(req, res) => serviceControllerPublication.deletePublications(req, res));
