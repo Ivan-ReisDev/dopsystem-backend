@@ -26,7 +26,9 @@ router.route('/user/delete/:userId').delete(authGuard(['Admin']),(req, res) => s
 router.route('/profile').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']), getcurrentUser, (req, res) => serviceControllerUser.getAll(req, res));
 router.route('/search').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerUser.searchUser(req, res));
 router.route('/admin/update').put(authGuard(['Admin']),(req, res) => serviceControllerUser.updateUserAdmin(req, res))
-router.route('/update/tag').put(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerUser.createTag(req, res))
+router.route('/update/tag').put(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerUser.createTag(req, res));
+router.route('/permissions').get(authGuard(['Admin']),(req, res) => serviceControllerUser.permissions(req, res))
+
 
 router.route('/teams/create').post(authGuard(['Admin']),(req, res) => serviceControllerTeams.createTeams(req, res));
 router.route('/teams/update/').put(authGuard(['Admin']),(req, res) => serviceControllerTeams.updateTeams(req, res))

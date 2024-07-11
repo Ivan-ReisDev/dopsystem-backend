@@ -120,16 +120,18 @@ const serviceControllerUser = {
     }
 
   },
-
   //Para deletar é necessário passar um parametro que é o ID do usuário que será deletado e o nick do usuário que irá deletar.
   // O código irá verificar se quem está deletando é admin e se quem será deletado existe no banco de dados.
-
   updateUserAdmin: async (req, res) => {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
       const { idUser, idEdit, nickname, patent, status, tag, warnings, medals, userType } = req.body;
       const admin = await User.findOne({ _id: idUser });
       const cont = await User.findOne({ _id: idEdit });
+
+      if(cont._id === process.env.CONT_MASTER_ID){
+        return res.status(404).json({ error: 'Ops! Você não pode atualizar a conta master.' });
+      }
 
       if (!admin || !cont) {
         res.status(404).json({ error: 'Dados não encontrados.' });
@@ -181,7 +183,6 @@ const serviceControllerUser = {
 
       if (tagOk) {
         cont.tag = tag ? tag : cont.tag;
-
         await cont.save();
         return res.status(200).json({ msg: 'Tag cadastrada com sucesso' });
       } else {
@@ -193,8 +194,6 @@ const serviceControllerUser = {
 
   },
 
-
-
   deleteUsers: async (req, res) => {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -202,9 +201,12 @@ const serviceControllerUser = {
       
       const admin = await User.findById(req.idUser);
       const deleteUser = await User.findById(userId);
+      if(deleteUser.nickname === process.env.CONT_MASTER_ID){
+        return res.status(404).json({ error: 'Ops! Você não pode excluir a conta master.' });
+      }
 
       if (!deleteUser) {
-        return res.status(404).json({ msg: 'Usuário não encontrado' });
+        return res.status(404).json({ error: 'Usuário não encontrado' });
       }
       if (admin && admin.userType !== "Admin") {
         return res.status(404).json({ error: 'Ops! Parece que você não é uma administrador.' });
@@ -221,9 +223,7 @@ const serviceControllerUser = {
       console.error('Não foi possível deletar o usuário', error);
       res.status(500).json({ msg: 'Não foi possível deletar o usuário' })
     }
-
   },
-
 
   getcurrentUser: async (req, res) => {
     try {
@@ -311,6 +311,20 @@ const serviceControllerUser = {
       console.log(error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
+  },
+
+  permissions: async(req, res) => {
+      try {
+        const userTypes = ['Admin', 'Diretor', 'Recursos Humanos'];
+        const users = await User.find({ userType: { $in: userTypes } }).select("nickname patent userType");;
+        return res.json(users);
+        
+      } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: 'Erro interno do servidor' });
+      }
+
+
   },
 
   logoutPass: async (req, res) => {

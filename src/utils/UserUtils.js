@@ -123,7 +123,6 @@ const isSuperior = async (higher, subordinate, type, patentContract, req, res) =
   }
 };
 
-
 //Cria um novo usuário no system
 const register = async (nick, patent) => {
   try {
