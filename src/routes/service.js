@@ -22,7 +22,7 @@ router.route('/logout').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Hum
 
 // Rotas privadas 
 router.route('/all/users').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']), (req, res) => serviceControllerUser.getAll(req, res))
-router.route('/user/delete/:userId').delete(authGuard(['Admin']),(req, res) => serviceControllerUser.deleteUsers(req, res))
+router.route('/user/delete').delete(authGuard(['Admin']),(req, res) => serviceControllerUser.deleteUsers(req, res))
 router.route('/profile').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']), getcurrentUser, (req, res) => serviceControllerUser.getAll(req, res));
 router.route('/search').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerUser.searchUser(req, res));
 router.route('/admin/update').put(authGuard(['Admin']),(req, res) => serviceControllerUser.updateUserAdmin(req, res))
