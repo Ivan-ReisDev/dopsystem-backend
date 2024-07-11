@@ -1,4 +1,5 @@
 const { User } = require("../Models/useModel.js");
+const { Requirements } = require("../Models/RequirementsModel.js")
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { InfoSystem } = require('../Models/systemModel.js');
@@ -198,10 +199,10 @@ const serviceControllerUser = {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
       const userId = req.params.userId;
-      const { nick } = req.body;
-      const admin = await User.findOne({ nickname: nick });
-      const deleteUser = await User.findOne({ _id: userId })
-
+      console.log(userId)
+      
+      const admin = await User.findById(req.idUser);
+      const deleteUser = await User.findById(userId);
 
       if (!deleteUser) {
         return res.status(404).json({ msg: 'Usuário não encontrado' });
@@ -212,6 +213,7 @@ const serviceControllerUser = {
 
       if (admin && admin.userType === "Admin" && deleteUser) {
         await User.findByIdAndDelete(userId);
+        await Requirements.deleteMany({promoted: deleteUser.nickname});
         await createLogger(`Deletou o usuário ${deleteUser.nickname}`, admin.nickname, "", ipAddress)
         return res.status(200).json({ msg: 'Usuário deletedo com sucesso' });
       }
@@ -245,9 +247,9 @@ const serviceControllerUser = {
 
         let query;
         if (nickname) {
-            query = User.find({ nickname: nickname }).select("-password");
+            query = User.find({ nickname: nickname }).select("-password -tokenActive -tokenIsNotValide");
         } else {
-            query = User.find().select("-password");
+            query = User.find().select("-password -tokenActive -tokenIsNotValide");
         }
 
         const users = await query
@@ -260,8 +262,6 @@ const serviceControllerUser = {
         res.status(500).json({ error: 'Erro ao recuperar usuários' });
     }
 },
-
-
 
 
   getAllNicks: async (req, res) => {

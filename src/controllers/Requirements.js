@@ -3,8 +3,6 @@ const { User } = require("../Models/useModel");
 const { Requirements } = require("../Models/RequirementsModel");
 const { InfoSystem } = require("../Models/systemModel");
 const { isDiretor, isSuperior, register, RegisterContExist, connectHabbo } = require("../utils/UserUtils")
-const bcrypt = require("bcryptjs");
-const { editRequeriment } = require("./RhController");
 
 const serviceControllerRequirements = {
     //Função responsável por criar a equioe
@@ -224,7 +222,7 @@ const serviceControllerRequirements = {
             }
     
             // Validar se o operador tem permissão para contratar o usuário promovido
-            const validateSuperior = await isSuperior(nicknameOperator, nicknameRelegation, "Contrato", patent);
+            const validateSuperior = await isSuperior(nicknameOperator, nicknameRelegation, "Contrato", patent, req);
             if (validateSuperior === false) {
                 return res.status(422).json({ error: 'Ops! Você não tem permissão para contratar esse usuário. Reporte o caso para algum superior.' });
             }
@@ -266,24 +264,25 @@ const serviceControllerRequirements = {
         }
     },
     
-
-
     createSales: async (req, res) => {
         try {
             const { idUser, promoted, patent, reason, price } = req.body;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknameRelegation = await User.findOne({ nickname: promoted });
             const info = await InfoSystem.findOne();
-            const passwordConf = "DOPsystem@@2024"
-
-            if (nicknameRelegation) {
-                return res.status(422).json({ error: "Ops! Esse usuário já existe" });
-            }
-
+ 
             if (!info || !info.patents || !info.paidPositions) {
                 return res.status(500).json({ msg: 'Informações do sistema não encontradas.' });
             }
+            if (nicknameRelegation) {
+                RegisterContExist(promoted, patent, false, true)
+
+            } else {
+                await register(promoted, patent);
+            }
+
             const validete = await isDiretor(nicknameOperator.patent);
+           
             if (nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
                     promoted,
@@ -296,25 +295,9 @@ const serviceControllerRequirements = {
                     status: "Pendente"
                 };
 
-                const saltHash = await bcrypt.genSalt(10);
-                const passwordHash = await bcrypt.hash(passwordConf, saltHash);
-
-                const newUser = {
-                    nickname: promoted,
-                    patent: patent,
-                    classes: "",
-                    teans: 'System',
-                    status: 'Pendente',
-                    tag: 'Vazio',
-                    warnings: "0",
-                    medals: "0",
-                    password: passwordHash,
-                    userType: 'User'
-                };
-
-                await Requirements.create(newRequirement);
-                const createUser = await User.create(newUser);
-                return !createUser
+                
+               const newSale = await Requirements.create(newRequirement);
+                return !newSale
                     ? res.status(422).json({ error: "Houve um erro, tente novamente mais tarde" })
                     : res.status(201).json({ msg: "Venda efetuada com sucesso." });
 
@@ -327,9 +310,6 @@ const serviceControllerRequirements = {
             res.status(500).json({ msg: "Erro ao efetuar cadastro" });
         }
     },
-
-
-
 
     getAllRequirementsPromoteds: async (req, res) => {
         try {
@@ -385,7 +365,6 @@ const serviceControllerRequirements = {
         }
     },
     
-
     searchRequeriments: async (req, res) => {
         try {
             const nameRequeriment = req.query.promoted;

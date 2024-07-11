@@ -54,8 +54,6 @@ const serviceControllerLogger = {
     //   }
     // },
     
-    
-
 };
 
 module.exports = serviceControllerLogger;

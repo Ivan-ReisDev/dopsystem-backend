@@ -28,7 +28,7 @@ const createLogger = async (action, user, name, ip) => {
     loggerType: `${action} ${name}`
   }
 
-  if(user === ".Disco.Master."){
+  if(user === "DOPSystem"){
     return
   }
 
@@ -58,7 +58,12 @@ const isDiretor = async (diretor) => {
 }
 
 //Verifica se um usuário é superior a outro
-const isSuperior = async (higher, subordinate, type, patentContract, res) => {
+const isSuperior = async (higher, subordinate, type, patentContract, req, res) => {
+  let userAdmin = false;
+  if(req){
+     userAdmin = await User.findOne({_id: req.idUser})
+  }
+
   const info = await InfoSystem.findOne();
   const diretor = isDiretor(higher);
 
@@ -75,7 +80,7 @@ const isSuperior = async (higher, subordinate, type, patentContract, res) => {
     info.paidPositions.indexOf(!patentContract ? subordinate.patent : patentContract);
 
   const indexRealOperator = patentOperadorIndex - 2;
-  if (patentPromotedIndex <= indexRealOperator || diretor === true ) {
+  if (patentPromotedIndex <= indexRealOperator || diretor === true || userAdmin.userType === "Admin") {
 
     let newIndexPatent;
 
@@ -117,6 +122,7 @@ const isSuperior = async (higher, subordinate, type, patentContract, res) => {
     };
   }
 };
+
 
 //Cria um novo usuário no system
 const register = async (nick, patent) => {
@@ -172,7 +178,7 @@ const register = async (nick, patent) => {
 }
 
 //Atualiza conta do usuário caso ela exista na postagem de algum requerimento
-const RegisterContExist = async (nickname, patent, classes) => {
+const RegisterContExist = async (nickname, patent, classes, sale) => {
   try {
     console.log('Iniciando processo de registro...');
     const passwordConf = `${process.env.USER_PASS_REGISTER}`
@@ -189,35 +195,43 @@ const RegisterContExist = async (nickname, patent, classes) => {
     } else {
       console.log('Usuário encontrado:', cont);
 
-      if (cont.patent !== "Civil" || cont.status === "Banido" || cont.status === "Exonerado") {
+      if (cont.status === "Banido" || cont.status === "Exonerado") {
         console.log('Usuário está banido, exonerado ou é funcionário ativo da DOP.');
         return {
           info: `Esse usuário encontra-se banido, exonerado ou no quadro de funcionários ativos da DOP.`,
           status: false
         };
+      } else if(cont.patent !== "Civil" && !sale){
+        console.log('Usuário está banido, exonerado ou é funcionário ativo da DOP.');
+        return {
+          info: `Esse usuário encontra-se banido, exonerado ou no quadro de funcionários ativos da DOP.`,
+          status: false
+        };
+      } else {
+
+        const saltHash = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(passwordConf, saltHash);
+  
+        cont.nickname = cont.nickname;
+        cont.classes = classes.length > 0 ? cont.classes : classes;
+        cont.teans = "System";
+        cont.patent = patent;
+        cont.status = "Pendente";
+        cont.tokenActive = "";
+        cont.tag = "Vazio";
+        cont.warnings = 0;
+        cont.medals = 0;
+        cont.password = passwordHash;
+        cont.userType = "User";
+        await cont.save();
+  
+        console.log('Usuário atualizado com sucesso.');
+        return {
+          info: 'Usuário atualizado com sucesso.',
+          status: true
+        };
+
       }
-
-      const saltHash = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(passwordConf, saltHash);
-
-      cont.nickname = cont.nickname;
-      cont.classes = classes;
-      cont.teams = "System";
-      cont.patent = patent;
-      cont.status = "Pendente";
-      cont.tokenActive = "";
-      cont.tag = "Vazio";
-      cont.warnings = 0;
-      cont.medals = 0;
-      cont.password = passwordHash;
-      cont.userType = "User";
-      await cont.save();
-
-      console.log('Usuário atualizado com sucesso.');
-      return {
-        info: 'Usuário atualizado com sucesso.',
-        status: true
-      };
 
     }
 
