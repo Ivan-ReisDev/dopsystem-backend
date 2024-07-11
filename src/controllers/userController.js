@@ -198,8 +198,7 @@ const serviceControllerUser = {
   deleteUsers: async (req, res) => {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-      const userId = req.query.userId;
-      console.log(userId)
+      const userId = req.params.userId;
       
       const admin = await User.findById(req.idUser);
       const deleteUser = await User.findById(userId);
