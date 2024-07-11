@@ -76,8 +76,8 @@ const serviceControllerUser = {
       const { securityCode, formdata } = req.body;
       const { newUserDopSystem, newPasswordDopSystem, newPasswordDopSystemConf } = formdata;
       const nickname = await User.findOne({ nickname: newUserDopSystem });
-
-      if (!nickname) {
+      
+      if (!nickname || nickname.nickname === "DOPSystem") {
         res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
       } else {
 
@@ -128,7 +128,6 @@ const serviceControllerUser = {
       const { idUser, idEdit, nickname, patent, status, tag, warnings, medals, userType } = req.body;
       const admin = await User.findOne({ _id: idUser });
       const cont = await User.findOne({ _id: idEdit });
-
       if(cont._id === process.env.CONT_MASTER_ID){
         return res.status(404).json({ error: 'Ops! Você não pode atualizar a conta master.' });
       }
@@ -323,8 +322,6 @@ const serviceControllerUser = {
         console.log(error);
         return res.status(500).json({ error: 'Erro interno do servidor' });
       }
-
-
   },
 
   logoutPass: async (req, res) => {
