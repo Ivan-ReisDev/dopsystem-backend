@@ -18,7 +18,7 @@ const serviceControllerEndorsement = require("../controllers/endorsementControll
 // router.route('/register').post((req, res) => serviceControllerUser.register(req, res))
 router.route('/login').post((req, res) => serviceControllerUser.login(req, res))
 router.route('/users/update').put((req, res) => serviceControllerUser.updateUser(req, res))
-router.route('/logout').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']), getcurrentUser, (req, res) => serviceControllerUser.logoutPass(req, res))
+router.route('/logout').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerUser.logoutPass(req, res))
 
 // Rotas privadas 
 router.route('/all/users').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']), (req, res) => serviceControllerUser.getAll(req, res))
