@@ -19,6 +19,7 @@ const serviceControllerRh = {
       if (nicknameOperator && (nicknameOperator.userType === "Admin" || nicknameOperator.userType === "Recursos Humanos" || nicknameOperator.userType === "Diretor" || team.leader === nicknameOperator.nickname || membersTeam === true)) {
         nickname.nickname = nickname.nickname;
         nickname.patent = statusRequirements === "Aprovado" ? requirement.newPatent : nickname.patent;
+        nickname.code =  requirement.newMotto ?? nickname.code
         nickname.classes = nickname.classes;
         nickname.teans = nickname.teans;
         nickname.status = nickname.status;

@@ -2,7 +2,7 @@ const { Teams } = require("../Models/teamsModel");
 const { User } = require("../Models/useModel");
 const { Requirements } = require("../Models/RequirementsModel");
 const { InfoSystem } = require("../Models/systemModel");
-const { isDiretor, isSuperior, register, RegisterContExist, connectHabbo } = require("../utils/UserUtils")
+const { isDiretor, isSuperior, register, RegisterContExist, connectHabbo, getCurrentDate } = require("../utils/UserUtils")
 
 const serviceControllerRequirements = {
     //Função responsável por criar a equioe
@@ -18,6 +18,7 @@ const serviceControllerRequirements = {
                 const newRequirement = {
                     promoted,
                     newPatent:validateSuperior.newPatent,
+                    newMotto: `${promoted} - Promovido por [${nicknameOperator.tag}] em ${getCurrentDate()}`,
                     reason,
                     patentOperador: nicknameOperator.patent,
                     operator: nicknameOperator.nickname,
@@ -57,6 +58,7 @@ const serviceControllerRequirements = {
                 const newRequirement = {
                     promoted,
                     newPatent: validateSuperior.newPatent,
+                    newMotto: `${promoted} - Rebaixado por [${nicknameOperator.tag}] em ${getCurrentDate()}`,
                     reason,
                     patentOperador: nicknameOperator.patent,
                     operator: nicknameOperator.nickname,
@@ -137,6 +139,7 @@ const serviceControllerRequirements = {
                 const newRequirement = {
                     promoted,
                     newPatent: "Civil",
+                    newMotto: `${promoted} - Demitido por [${nicknameOperator.tag}] em ${getCurrentDate()}`,
                     reason,
                     patentOperador: nicknameOperator.patent,
                     operator: nicknameOperator.nickname,
@@ -245,6 +248,7 @@ const serviceControllerRequirements = {
             const newRequirement = {
                 promoted,
                 newPatent: patent,
+                newMotto: `${promoted} - Contratado por [${nicknameOperator.tag}] em ${getCurrentDate()}`,
                 reason,
                 patentOperador: nicknameOperator.patent,
                 operator: nicknameOperator.nickname,
@@ -287,6 +291,7 @@ const serviceControllerRequirements = {
                 const newRequirement = {
                     promoted,
                     newPatent: patent,
+                    newMotto: `${promoted} - Integrado por [${nicknameOperator.tag}] em ${getCurrentDate()}`,
                     reason,
                     patentOperador: nicknameOperator.patent,
                     operator: nicknameOperator.nickname,

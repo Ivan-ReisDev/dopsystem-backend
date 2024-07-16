@@ -278,6 +278,21 @@ const clearTokens = async () => {
 };
 
 
+const getCurrentDate = () => {
+  const months = [
+    'janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+    'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'
+  ];
+
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = months[now.getMonth()];
+  const year = now.getFullYear();
+
+  return `${day} de ${month} de ${year}`;
+}
+
+
 
 
 module.exports = {
@@ -288,6 +303,7 @@ module.exports = {
   register,
   RegisterContExist,
   isSuperior,
-  getInfos
+  getInfos,
+  getCurrentDate
 
 };

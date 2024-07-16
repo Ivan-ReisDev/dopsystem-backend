@@ -11,6 +11,11 @@ const requirementsSchema = new mongoose.Schema({
         required: false
     },
 
+    newMotto: {
+        type: String,
+        required: false
+    },
+
     patentOperador : {
         type: String,
         required: false

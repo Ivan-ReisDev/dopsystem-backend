@@ -53,6 +53,11 @@ const userSchema = new mongoose.Schema({
         required: true,
     },
 
+    code: {
+        type: String,
+        required: false,
+    },
+
     tokenActive: {
         type: String,
     },
