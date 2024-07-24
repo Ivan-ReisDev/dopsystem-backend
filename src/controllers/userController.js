@@ -3,10 +3,9 @@ const { Requirements } = require("../Models/RequirementsModel.js")
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { InfoSystem } = require('../Models/systemModel.js');
-const { 
-   connectHabbo,
-   createLogger,
-   tokenActiveDb } = require('../utils/UserUtils.js');
+const { Utils } = require('../utils/UserUtils.js');
+
+const utils = new Utils();
 
 const GenerateToken = (id) => {
   return jwt.sign(
@@ -49,9 +48,9 @@ const serviceControllerUser = {
         return res.status(400).json({ error: 'Nickname ou senha incorretos.' });
       }
 
-      await createLogger("Efetuou o login no sistema.", checkUser.nickname, " ", ipAddress);
+      await  utils.createLogger("Efetuou o login no sistema.", checkUser.nickname, " ", ipAddress);
       const tokenActive = GenerateToken(checkUser._id);
-      await tokenActiveDb(checkUser.nickname, tokenActive);
+      await utils.tokenActiveDb(checkUser.nickname, tokenActive);
 
       return res.status(201).json({
         _id: checkUser._id,
@@ -81,7 +80,7 @@ const serviceControllerUser = {
         res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
       } else {
 
-        const motto = await connectHabbo(nickname.nickname);
+        const motto = await utils.connectHabbo(nickname.nickname);
 
         if (newPasswordDopSystemConf !== newPasswordDopSystem) {
           return res.status(404).json({ msg: "Senha incorreta tente novamente." });
@@ -150,7 +149,7 @@ const serviceControllerUser = {
           cont.password = cont.password;
           cont.userType = userType ? userType : cont.userType;
           await cont.save();
-          await createLogger(`Alterou o perfil do usuário ${cont.nickname}`, admin.nickname, "", ipAddress)
+          await utils.createLogger(`Alterou o perfil do usuário ${cont.nickname}`, admin.nickname, "", ipAddress)
           return res.status(200).json({ msg: 'Usuário atualizado com sucesso.' });
         }
 
@@ -214,7 +213,7 @@ const serviceControllerUser = {
       if (admin && admin.userType === "Admin" && deleteUser) {
         await User.findByIdAndDelete(userId);
         await Requirements.deleteMany({promoted: deleteUser.nickname});
-        await createLogger(`Deletou o usuário ${deleteUser.nickname}`, admin.nickname, "", ipAddress)
+        await utils.createLogger(`Deletou o usuário ${deleteUser.nickname}`, admin.nickname, "", ipAddress)
         return res.status(200).json({ msg: 'Usuário deletedo com sucesso' });
       }
 

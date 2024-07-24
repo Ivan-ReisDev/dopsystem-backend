@@ -4,9 +4,9 @@ const { Classes } = require('../Models/classesModel.js')
 const { Requirements } = require("../Models/RequirementsModel");
 const { Teams } = require("../Models/teamsModel");
 const mongoose = require('mongoose');
-const { createLogger, register, RegisterContExist, connectHabbo } = require('../utils/UserUtils.js')
+const { Utils } = require('../utils/UserUtils.js')
 
-
+const utils = new Utils()
 
 const updateProfileClasse = async (id, classe) => {
     const student = await User.findById(id);
@@ -25,35 +25,6 @@ const updateProfileClasse = async (id, classe) => {
     student.save()
   
 }
-
-
-// const createClasseTeamUpdate = async (team, classes) => {
-//   try {
-//     const teamsUpdate = await Teams.findOne({nameTeams: team});
-
-//     if (teamsUpdate) {
-
-//       teamsUpdate.nameTeams = teamsUpdate.nameTeams;
-//       teamsUpdate.teamsType = teamsUpdate.teamsType;
-//       teamsUpdate.leader = teamsUpdate.leader;
-//       teamsUpdate.viceLeader = teamsUpdate.viceLeader;
-//       teamsUpdate.members = teamsUpdate.members;
-//       teamsUpdate.classes = classes !== ""? [...teamsUpdate.classes, classes ] : teamsUpdate.classes;
-
-//       return await teamsUpdate.save();
-//   } else {
-//       return res.status(403).json({ msg: 'Ops! Parece que você não tem permissão para editar essa aula.' });
-//   }
-
-
-// } catch (error) {
-//     console.error('Ops! Não foi possível atualizar a equipe ou órgão.', error);
-//     res.status(500).json({ msg: 'Ops! Não foi possível atualizar a equipe ou órgão.' })
-// }
-
-
-
-// }
 
 const serviceControllerClasse = {
   //student, teacher, nameClasse, team, comments
@@ -82,7 +53,7 @@ const serviceControllerClasse = {
         };
 
         const createClasse = await Classes.create(newClasse);
-        await createLogger("Criou uma nova aula", userAdmin.nickname, nameClasse, ipAddress);
+        await utils.createLogger("Criou uma nova aula", userAdmin.nickname, nameClasse, ipAddress);
         return !createClasse
           ? res.status(422).json({ error: "Houve um erro, tente novamente mais tarde" })
           : res.status(201).json({ msg: "Aula criada com sucesso." });
@@ -114,7 +85,7 @@ const serviceControllerClasse = {
 
         if (admin && admin.userType === "Admin" && deleteClasse) {
             await Classes.findByIdAndDelete(deleteClasse._id);
-            await createLogger("Excluiu a aula ", admin.nickname, deleteClasse.nameClasse, ipAddress)
+            await utils.createLogger("Excluiu a aula ", admin.nickname, deleteClasse.nameClasse, ipAddress)
             return res.status(200).json({ msg: 'Aula deletada com sucesso.' });
         }
 
@@ -185,20 +156,20 @@ const serviceControllerClasse = {
         if (!nicknameDocente) {
             return res.status(404).json({ error: 'Docente não encontrado.' });
         }
-
-        const responseHabbo = await connectHabbo(student.trim());
+        
+        const responseHabbo = await utils.connectHabbo(student.trim());
         if (responseHabbo === "error") {
             return res.status(404).json({ error: 'Este usuário não existe no Habbo Hotel' });
         }
 
         const nicknameUser = await User.findOne({ nickname: student });
         if (nicknameUser) {
-            const response = await RegisterContExist(nicknameUser.nickname, "Soldado", "Curso Inicial [C.I]");
+            const response = await utils.RegisterContExist(nicknameUser.nickname, "Soldado", "Curso Inicial [C.I]");
             if (!response.status) {
                 return res.status(400).json({ error: response.info });
             }
         } else {
-            const registered = await register(student.trim(), "Soldado");
+            const registered = await utils.register(student.trim(), "Soldado");
             if (!registered.status) {
                 return res.status(422).json({ error: registered.info });
             }
@@ -250,7 +221,7 @@ const serviceControllerClasse = {
       }
 
       if (userAdmin.userType === 'Admin' || (teamUpdate.leader === userAdmin.nickname)) {
-        await createLogger("Editou o aula", userAdmin.nickname, classeUpdate.team, ipAddress);
+        await utils.createLogger("Editou o aula", userAdmin.nickname, classeUpdate.team, ipAddress);
         classeUpdate.nameClasse = nameClasse || classeUpdate.nameClasse;
         classeUpdate.team = team || classeUpdate.team;
         classeUpdate.patent = patent || classeUpdate.patent;

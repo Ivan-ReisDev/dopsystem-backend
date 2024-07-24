@@ -1,8 +1,10 @@
 const { Teams } = require("../Models/teamsModel");
 const { User } = require("../Models/useModel");
-const { createLogger } = require('../utils/UserUtils');
+const { Utils } = require('../utils/UserUtils');
 const { Requirements } = require("../Models/RequirementsModel");
 const mongoose = require('mongoose');
+
+const utils = new Utils();
 
 
 function dataSeisDiasAtras() {
@@ -268,7 +270,7 @@ const serviceControllerTeams = {
                 members: [membersLeader, membersViceLeader],
             };
 
-           await createLogger(`Uma nova equipe foi criada com o nome: ${nameTeams}`, nickname.nickname, " ", ipAddress);
+           await utils.createLogger(`Uma nova equipe foi criada com o nome: ${nameTeams}`, nickname.nickname, " ", ipAddress);
     
     
             const createTeams = await Teams.create(newTeams);
@@ -398,7 +400,7 @@ const serviceControllerTeams = {
     
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-            await createLogger(`A equipe ${teamsUpdate.nameTeams} foi atualizada.`, userAdmin.nickname, " ", ipAddress);
+            await utils.createLogger(`A equipe ${teamsUpdate.nameTeams} foi atualizada.`, userAdmin.nickname, " ", ipAddress);
   
 
             res.status(200).json({ msg: 'Equipe atualizada com sucesso!' });
@@ -426,7 +428,7 @@ const serviceControllerTeams = {
 
             if (admin && admin.userType === "Admin" && deleteTeam) {
                 await Teams.findByIdAndDelete(deleteTeam._id);
-                await createLogger("Excluiu a equipe de", admin.nickname, deleteTeam.nameTeams, ipAddress)
+                await utils.createLogger("Excluiu a equipe de", admin.nickname, deleteTeam.nameTeams, ipAddress)
                 return res.status(200).json({ error: 'Equipe deletada com sucesso.' });
             }
 

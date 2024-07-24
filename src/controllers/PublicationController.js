@@ -1,17 +1,11 @@
 const { Logger } = require('../Models/logsModel');
 const { User } = require('../Models/useModel');
 const { Teams } = require("../Models/teamsModel");
-const { Publication } = require('../Models/PublicationModel')
+const { Publication } = require('../Models/PublicationModel');
+const { Utils } = require('../utils/UserUtils');
 
-const createLogger = async (action, user, name, ip) => {
-    const newLogger = {
-        user: user,
-        ip: ip,
-        loggerType: `${action} ${name}`
-    }
+const utils = new Utils();
 
-    await Logger.create(newLogger);
-}
 //user, title, content, linkImg
 const serviceControllerPublication = {
     createPublication: async (req, res) => {
@@ -43,7 +37,7 @@ const serviceControllerPublication = {
                     return res.status(422).json({ error: 'Ops! Parece que houve um erro, tente novamente mais tarde.' })
                 }
                 
-                await createLogger("Acabou de criar uma publicação", nickname.nickname, title, ipAddress)
+                await utils.createLogger("Acabou de criar uma publicação", nickname.nickname, title, ipAddress)
                 return  res.status(201).json({ msg: 'Publicação criada com sucesso.' })
             }
 
@@ -71,7 +65,7 @@ const serviceControllerPublication = {
             return res.status(200).json({ msg: 'Publicação deleteda com sucesso' });
           }
 
-          await createLogger("Acabou de criar uma publicação", admin.nickname, deletePublication.title, ipAddress)
+          await utils.createLogger("Acabou de criar uma publicação", admin.nickname, deletePublication.title, ipAddress)
           return res.status(404).json({ error: 'Ops! Você não tem permissão para excluir essa publicação.' })
     
         } catch (error) {

@@ -1,17 +1,11 @@
 const { Logger } = require('../Models/logsModel');
 const { User } = require('../Models/useModel');
 const { Endorsement } = require('../Models/endorsementModel');
+const { Utils } = require('../utils/UserUtils');
 const moment = require('moment');
 
-const createLogger = async (action, user, name, ip) => {
-  const newLogger = {
-      user: user,
-      ip: ip,
-      loggerType: `${action} ${name}`
-  }
 
-  await Logger.create(newLogger);
-}
+const utils = new Utils();
 
 const serviceControllerEndorsement = {
   //Função para aprovar ou reprovar requerimentos:
@@ -103,7 +97,7 @@ const serviceControllerEndorsement = {
         return res.status(200).json({ msg: 'Aval deletado com sucesso' });
       }
 
-      await createLogger("Acabou de deletar um", admin.nickname, "Aval", ipAddress)
+      await utils.createLogger("Acabou de deletar um", admin.nickname, "Aval", ipAddress)
       return res.status(404).json({ error: 'Ops! Você não tem permissão para excluir esse Aval.' })
 
     } catch (error) {

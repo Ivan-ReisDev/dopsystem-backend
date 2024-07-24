@@ -2,7 +2,9 @@ const { Teams } = require("../Models/teamsModel");
 const { User } = require("../Models/useModel");
 const { Requirements } = require("../Models/RequirementsModel");
 const { InfoSystem } = require("../Models/systemModel");
-const { isDiretor, isSuperior, register, RegisterContExist, connectHabbo, getCurrentDate } = require("../utils/UserUtils")
+const { Utils } = require("../utils/UserUtils")
+
+const utils = new Utils()
 
 const serviceControllerRequirements = {
     //Função responsável por criar a equioe
@@ -11,14 +13,14 @@ const serviceControllerRequirements = {
             const { idUser, promoted, reason } = req.body;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknamePromoted = await User.findOne({ nickname: promoted });
-            const validateSuperior = await isSuperior(nicknameOperator, nicknamePromoted, "Promoção");
-            const validete = await isDiretor(nicknameOperator.patent);
+            const validateSuperior = await utils.isSuperior(nicknameOperator, nicknamePromoted, "Promoção");
+            const validete = await utils.isDiretor(nicknameOperator.patent);
             
             if (validateSuperior.isSuperior === true || nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
                     promoted,
                     newPatent:validateSuperior.newPatent,
-                    newMotto: `${promoted} - Promovido por [${nicknameOperator.tag}] em ${getCurrentDate()}`,
+                    newMotto: `${promoted} - Promovido por [${nicknameOperator.tag}] em ${utils.getCurrentDate()}`,
                     reason,
                     patentOperador: nicknameOperator.patent,
                     operator: nicknameOperator.nickname,
@@ -49,8 +51,8 @@ const serviceControllerRequirements = {
             const { idUser, promoted, reason } = req.body;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknameRelegation = await User.findOne({ nickname: promoted });
-            const validete = await isDiretor(nicknameOperator.patent);
-            const validateSuperior = await isSuperior(nicknameOperator, nicknameRelegation, "Rebaixamento");
+            const validete = await utils.isDiretor(nicknameOperator.patent);
+            const validateSuperior = await utils.isSuperior(nicknameOperator, nicknameRelegation, "Rebaixamento");
 
 
             
@@ -58,7 +60,7 @@ const serviceControllerRequirements = {
                 const newRequirement = {
                     promoted,
                     newPatent: validateSuperior.newPatent,
-                    newMotto: `${promoted} - Rebaixado por [${nicknameOperator.tag}] em ${getCurrentDate()}`,
+                    newMotto: `${promoted} - Rebaixado por [${nicknameOperator.tag}] em ${utils.getCurrentDate()}`,
                     reason,
                     patentOperador: nicknameOperator.patent,
                     operator: nicknameOperator.nickname,
@@ -90,8 +92,8 @@ const serviceControllerRequirements = {
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknameRelegation = await User.findOne({ nickname: promoted });
 
-            const validateSuperior = await isSuperior(nicknameOperator, nicknameRelegation, "Advertência");
-            const validete = await isDiretor(nicknameOperator.patent);
+            const validateSuperior = await utils.isSuperior(nicknameOperator, nicknameRelegation, "Advertência");
+            const validete = await utils.isDiretor(nicknameOperator.patent);
 
             if (validateSuperior.isSuperior === true || nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
@@ -133,13 +135,13 @@ const serviceControllerRequirements = {
                 return res.status(404).json({ msg: "Ops! Este usuário não se encontra no quadro de funcionários." });
             };
 
-            const validateSuperior = await isSuperior(nicknameOperator, nicknameRelegation, "Demissão");
-            const validete = await isDiretor(nicknameOperator.patent);
+            const validateSuperior = await utils.isSuperior(nicknameOperator, nicknameRelegation, "Demissão");
+            const validete = await utils.isDiretor(nicknameOperator.patent);
             if (validateSuperior.isSuperior === true || nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
                     promoted,
                     newPatent: "Civil",
-                    newMotto: `${promoted} - Demitido por [${nicknameOperator.tag}] em ${getCurrentDate()}`,
+                    newMotto: `${promoted} - Demitido por [${nicknameOperator.tag}] em ${utils.getCurrentDate()}`,
                     reason,
                     patentOperador: nicknameOperator.patent,
                     operator: nicknameOperator.nickname,
@@ -219,26 +221,26 @@ const serviceControllerRequirements = {
             const nicknameRelegation = await User.findOne({ nickname: promoted });
     
             // Conectar ao Habbo para verificar a existência do usuário
-            const responseHabbo = await connectHabbo(promoted.trim());
+            const responseHabbo = await utils.connectHabbo(promoted.trim());
             if (responseHabbo === "error") {
                 return res.status(404).json({ error: 'Este usuário não existe no Habbo Hotel' });
             }
     
             // Validar se o operador tem permissão para contratar o usuário promovido
-            const validateSuperior = await isSuperior(nicknameOperator, nicknameRelegation, "Contrato", patent, req);
+            const validateSuperior = await utils.isSuperior(nicknameOperator, nicknameRelegation, "Contrato", patent, req);
             if (validateSuperior === false) {
                 return res.status(422).json({ error: 'Ops! Você não tem permissão para contratar esse usuário. Reporte o caso para algum superior.' });
             }
     
             // Verificar se o usuário promovido já está registrado
             if (nicknameRelegation) {
-                const response = await RegisterContExist(nicknameRelegation.nickname, patent, " ");
+                const response = await utils.RegisterContExist(nicknameRelegation.nickname, patent, " ");
                 if (response.status === false) {
                     return res.status(400).json({ error: response.info });
                 }
             } else {
                 // Registrar novo usuário se não estiver registrado
-                const registrered = await register(promoted.trim(), patent);
+                const registrered = await utils.register(promoted.trim(), patent);
                 if (registrered.status === false) {
                     return res.status(422).json({ error: registrered.info });
                 }
@@ -248,7 +250,7 @@ const serviceControllerRequirements = {
             const newRequirement = {
                 promoted,
                 newPatent: patent,
-                newMotto: `${promoted} - Contratado por [${nicknameOperator.tag}] em ${getCurrentDate()}`,
+                newMotto: `${promoted} - Contratado por [${nicknameOperator.tag}] em ${utils.getCurrentDate()}`,
                 reason,
                 patentOperador: nicknameOperator.patent,
                 operator: nicknameOperator.nickname,
@@ -279,19 +281,19 @@ const serviceControllerRequirements = {
                 return res.status(500).json({ msg: 'Informações do sistema não encontradas.' });
             }
             if (nicknameRelegation) {
-                RegisterContExist(promoted, patent, false, true)
+                utils.RegisterContExist(promoted, patent, false, true)
 
             } else {
-                await register(promoted, patent);
+                await utils.register(promoted, patent);
             }
 
-            const validete = await isDiretor(nicknameOperator.patent);
+            const validete = await utils.isDiretor(nicknameOperator.patent);
            
             if (nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
                     promoted,
                     newPatent: patent,
-                    newMotto: `${promoted} - Integrado por [${nicknameOperator.tag}] em ${getCurrentDate()}`,
+                    newMotto: `${promoted} - Integrado por [${nicknameOperator.tag}] em ${utils.getCurrentDate()}`,
                     reason,
                     patentOperador: nicknameOperator.patent,
                     operator: nicknameOperator.nickname,

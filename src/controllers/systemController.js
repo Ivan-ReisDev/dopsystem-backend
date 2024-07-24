@@ -1,7 +1,9 @@
 const { Teams } = require("../Models/teamsModel");
 const { User } = require("../Models/useModel");
 const { InfoSystem } = require("../Models/systemModel");
-const { getInfos } = require("../utils/UserUtils")
+const { Utils } = require("../utils/UserUtils")
+
+const utils = new Utils();
 
 const serviceControllerSystem = {
 
@@ -41,7 +43,7 @@ const serviceControllerSystem = {
 
   getInfoSystem: async (req, res) => {
     try {
-      const info = await getInfos()
+      const info = await utils.getInfos()
       const systemInfo = await InfoSystem.find();
       return res.json(systemInfo)
     } catch (error) {
@@ -53,7 +55,7 @@ const serviceControllerSystem = {
 
   getInfoSystemDpanel: async (req, res) => {
     try {
-      const info = await getInfos()
+      const info = await utils.getInfos()
       const systemInfo = await InfoSystem.find();
       return res.json({ info, systemInfo })
 

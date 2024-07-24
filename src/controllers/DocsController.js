@@ -2,10 +2,10 @@ const { Teams } = require("../Models/teamsModel");
 const { User } = require("../Models/useModel");
 const { DocsSystem } = require("../Models/docsModel");
 const { Classes } = require("../Models/classesModel");
-const { createLogger } = require("../utils/UserUtils")
+const { Utils } = require("../utils/UserUtils")
 const mongoose = require('mongoose');
 
-
+const utils = new Utils();
 const createClasse = async (classe, team) => {
     try {
         const newClasse = {
@@ -51,7 +51,7 @@ const serviceControllerDocs = {
                     status: "Ativo",
                     script,
                 };
-                await createLogger("Criou um novo documento", nickname.nickname, nameDocs, ipAddress);
+                await utils.createLogger("Criou um novo documento", nickname.nickname, nameDocs, ipAddress);
                 const docCriado = await DocsSystem.create(newDoc);
     
                 if (!docCriado) {
@@ -138,7 +138,7 @@ const serviceControllerDocs = {
                 docUpdate.script = script !== undefined ? script : docUpdate.script;
     
                 await docUpdate.save();
-                await createLogger("Editou o documento", userAdmin.nickname, docUpdate.nameDocs, ipAddress);
+                await utils.createLogger("Editou o documento", userAdmin.nickname, docUpdate.nameDocs, ipAddress);
                 return res.status(200).json({ msg: 'Documento atualizado com sucesso!' });
             }
             
@@ -164,13 +164,13 @@ const serviceControllerDocs = {
 
             if (admin && (admin.userType === "Admin" || admin.userType === "Diretor")) {
                 await DocsSystem.findByIdAndDelete(deleteDoc._id);
-                await createLogger("Deletou o documento", admin.nickname, deleteDoc.nameDocs, ipAddress);
+                await utils.createLogger("Deletou o documento", admin.nickname, deleteDoc.nameDocs, ipAddress);
 
                 return res.status(200).json({ msg: 'Documento deletedo com sucesso' });
 
             } else if (TeamSelect.leader === admin.nickname) {
                 await DocsSystem.findByIdAndDelete(deleteDoc._id);
-                await createLogger("Deletou o documento", admin.nickname, deleteDoc.nameDocs, ipAddress);
+                await utils.createLogger("Deletou o documento", admin.nickname, deleteDoc.nameDocs, ipAddress);
                 return res.status(200).json({ msg: 'Documento deletedo com sucesso' });
 
             } else {
