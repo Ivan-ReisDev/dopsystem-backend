@@ -12,15 +12,6 @@ import UserRouter from "./UserRouter.js";
 
 const AppRoutes = Router();
 
-AppRoutes.use("/classe", ClasseRouter);
-AppRoutes.use("/document", DocsRouter);
-AppRoutes.use("/endorsement", EndorsementRouter);
-AppRoutes.use("/logger", LoggerRouter)
-AppRoutes.use("/publication", PublicationRouter);
-AppRoutes.use("/requirements", RequirementsRouter);
-AppRoutes.use("/rh", RhRouter)
-AppRoutes.use("/system", SystemRouter);
-AppRoutes.use("/teams", TeamsRouter);
-AppRoutes.use("/user", UserRouter)
+AppRoutes.use("/", ClasseRouter, DocsRouter, EndorsementRouter, LoggerRouter, PublicationRouter, RequirementsRouter, RhRouter, SystemRouter, TeamsRouter, UserRouter);
 
 export default AppRoutes;
