@@ -1,12 +1,14 @@
-const { Logger } = require('../Models/logsModel');
-const { User } = require("../Models/useModel.js");
-const { DocsSystem } = require("../Models/docsModel.js")
-const { InfoSystem } = require('../Models/systemModel.js')
-const bcrypt = require("bcryptjs");
-const { Teams } = require('../Models/teamsModel.js');
+
+import { Logger } from '../Models/logsModel.js';
+import { User } from '../Models/useModel.js';
+import { DocsSystem } from '../Models/docsModel.js';
+import { InfoSystem } from '../Models/systemModel.js';
+import { Teams } from '../Models/teamsModel.js';
+import bcrypt from 'bcryptjs'
+
 const apiHabbo = `https://www.habbo.com.br/api/public/users?name=`
 
-class Utils {
+export class Utils {
   // Conecta com a api de usuário do habbo
   async connectHabbo(nick) {
     try {
@@ -176,7 +178,7 @@ class Utils {
       info.paidPositions.indexOf(diretor);
     return isValidado >= 14 ? true : false;
 
-  }
+  };
 
   //Verifica se um usuário é superior a outro
   async isSuperior(higher, subordinate, type, patentContract, req, res) {
@@ -256,7 +258,26 @@ class Utils {
       usersTotal,
       teams,
     }
-  }
+  };
+
+  async updateProfile(nickname, team) {
+    const userMember = await User.findOne({ nickname: nickname });
+
+    if (!userMember) {
+      console.error(`User with nickname ${nickname} not found.`);
+      return; // Ou lançar um erro, dependendo de como você quer lidar com isso
+    }
+
+    console.log(userMember);
+
+    let newTeams = userMember.teans || []; // Corrigir a propriedade de teans para teams
+    newTeams.push(team);
+
+    userMember.teans = newTeams;
+
+    // Não é necessário redefinir todas as outras propriedades se não estiverem sendo alteradas
+    await userMember.save();
+  };
 
   getCurrentDate() {
     const months = [
@@ -270,7 +291,16 @@ class Utils {
     const year = now.getFullYear();
 
     return `${day} de ${month} de ${year}`;
-  }
+  };
+
+  dataSeisDiasAtras() {
+    const hoje = new Date();
+    hoje.setDate(hoje.getDate() - 7);
+    // Retorna a data formatada como string (opcional)
+    // Aqui, você pode escolher o formato desejado. Este exemplo retorna a data no formato ISO (YYYY-MM-DD)
+    const dataFormatada = hoje.toISOString().split()[0];
+    return dataFormatada;
+  };
 
 }
 
@@ -294,4 +324,3 @@ class Utils {
 //   }
 // };
 
-module.exports = { Utils };

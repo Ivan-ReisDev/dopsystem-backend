@@ -1,8 +1,26 @@
-const router = require("express").Router();
+import { Router } from "express";
+import ClasseRouter from "./ClasseRouter.js";
+import DocsRouter from "./DocsRouter.js";
+import EndorsementRouter from "./EndorsementRouter.js";
+import LoggerRouter from "./LoggerRouter.js";
+import PublicationRouter from "./PublicationRouter.js";
+import RequirementsRouter from "./RequirementsRouter.js";
+import RhRouter from "./RhRouter.js";
+import SystemRouter from "./SystemRouter.js";
+import TeamsRouter from "./TeamsRouter.js";
+import UserRouter from "./UserRouter.js";
 
-const serviceRouter = require("./service");
+const AppRoutes = Router();
 
-router.use("/", serviceRouter)
+AppRoutes.use("/classe", ClasseRouter);
+AppRoutes.use("/document", DocsRouter);
+AppRoutes.use("/endorsement", EndorsementRouter);
+AppRoutes.use("/logger", LoggerRouter)
+AppRoutes.use("/publication", PublicationRouter);
+AppRoutes.use("/requirements", RequirementsRouter);
+AppRoutes.use("/rh", RhRouter)
+AppRoutes.use("/system", SystemRouter);
+AppRoutes.use("/teams", TeamsRouter);
+AppRoutes.use("/user", UserRouter)
 
-
-module.exports = router;
+export default AppRoutes;

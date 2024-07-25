@@ -1,50 +1,19 @@
-const { Teams } = require("../Models/teamsModel");
-const { User } = require("../Models/useModel");
-const { Utils } = require('../utils/UserUtils');
-const { Requirements } = require("../Models/RequirementsModel");
-const mongoose = require('mongoose');
+import { Teams } from "../Models/teamsModel.js";
+import { User } from "../Models/useModel.js";
+import { Requirements } from "../Models/RequirementsModel.js";
+import { Utils } from "../utils/UserUtils.js";
+import mongoose from "mongoose";
 
 const utils = new Utils();
 
+export default class ServiceControllerTeams {
 
-function dataSeisDiasAtras() {
-    const hoje = new Date();
-    hoje.setDate(hoje.getDate() - 7);
-    // Retorna a data formatada como string (opcional)
-    // Aqui, você pode escolher o formato desejado. Este exemplo retorna a data no formato ISO (YYYY-MM-DD)
-    const dataFormatada = hoje.toISOString().split()[0];
-    return dataFormatada;
-}
-
-
-
-const updateProfile = async (nickname, team) => {
-    const userMember = await User.findOne({ nickname: nickname });
-    
-    if (!userMember) {
-        console.error(`User with nickname ${nickname} not found.`);
-        return; // Ou lançar um erro, dependendo de como você quer lidar com isso
-    }
-
-    console.log(userMember);
-
-    let newTeams = userMember.teans || []; // Corrigir a propriedade de teans para teams
-    newTeams.push(team);
-
-    userMember.teans = newTeams;
-
-    // Não é necessário redefinir todas as outras propriedades se não estiverem sendo alteradas
-    await userMember.save();
-}
-
-const serviceControllerTeams = {
-
-    returnInfoTeams: async (req, res) => {
+    async returnInfoTeams(req, res) {
         try {
             const typeRequirement = req.query.typeRequirement;
             const nameTeams = req.query.teams;
             const hoje = new Date();
-            const seisDiasAtras = new Date(dataSeisDiasAtras());
+            const seisDiasAtras = new Date(utils.dataSeisDiasAtras());
 
             const requeriments = await Requirements.find({
                 createdAt: {
@@ -73,10 +42,10 @@ const serviceControllerTeams = {
         } catch (error) {
             return res.status(500).json({ error: error.message });
         }
-    },
+    };
 
 
-    RemoveUserTeams: async (req, res) => {
+    async RemoveUserTeams(req, res) {
         try {
             const { idUser, nickMember, idTeams } = req.body;
 
@@ -139,9 +108,9 @@ const serviceControllerTeams = {
             console.error('Ops! Não foi possível atualizar o documento.', error);
             res.status(500).json({ msg: 'Ops! Não foi possível atualizar o documento.' });
         }
-    },
+    };
 
-    addUserTeams: async (req, res) => {
+    async addUserTeams(req, res) {
         try {
 
             const { idUser, nickMember, office, idTeams } = req.body;
@@ -192,7 +161,7 @@ const serviceControllerTeams = {
                 userMember.patent = userMember.patent;
                 userMember.classes = userMember.classes;
                 userMember.teans = newArrayAtt;
-                userMember.status =  userMember.status;
+                userMember.status = userMember.status;
                 userMember.tag = userMember.tag;
                 userMember.warnings = userMember.warnings;
                 userMember.medals = userMember.medals;
@@ -214,19 +183,18 @@ const serviceControllerTeams = {
             console.error('Ops! Não foi possível atualizar o documento.', error);
             res.status(500).json({ msg: 'Ops! Não foi possível atualizar o documento.' });
         }
-    },
+    };
 
-
-    createTeams: async (req, res) => {
+    async createTeams(req, res) {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
             console.log(req.body);
             const { idUser, nameTeams, leader, viceLeader } = req.body;
-    
+
             if (!nameTeams || !leader || !viceLeader) {
                 return res.status(422).json({ error: 'Preencha todos os campos' });
             }
-    
+
             const nickname = await User.findOne({ _id: idUser });
             if (!nickname) {
                 return res.status(422).json({ error: 'Usuário não encontrado.' });
@@ -234,35 +202,35 @@ const serviceControllerTeams = {
             if (nickname.userType !== "Admin") {
                 return res.status(422).json({ error: 'Ops! Você não é um administrador.' });
             }
-    
+
             const nicknameLeader = await User.findOne({ nickname: leader });
             if (!nicknameLeader) {
                 return res.status(422).json({ error: 'Ops! Esse líder não existe em nossos sistemas.' });
             }
-    
+
             const nicknameViceLeader = await User.findOne({ nickname: viceLeader });
             if (!nicknameViceLeader) {
                 return res.status(422).json({ error: 'Ops! Esse vice-líder não existe em nossos sistemas.' });
             }
-    
+
             const nameTeam = await Teams.findOne({ nameTeams: nameTeams });
             if (nameTeam) {
                 return res.status(422).json({ error: 'Ops! Essa equipe já existe.' });
             }
-    
+
             const membersLeader = {
                 nickname: leader,
                 office: "Líder"
             };
-    
+
             const membersViceLeader = {
                 nickname: viceLeader,
                 office: "Vice Líder"
             };
-            
-            await updateProfile(nicknameLeader.nickname, nameTeams);
-            await updateProfile(nicknameViceLeader.nickname, nameTeams);
-    
+
+            await utils.updateProfile(nicknameLeader.nickname, nameTeams);
+            await utils.updateProfile(nicknameViceLeader.nickname, nameTeams);
+
             const newTeams = {
                 nameTeams: nameTeams,
                 leader: leader,
@@ -270,24 +238,24 @@ const serviceControllerTeams = {
                 members: [membersLeader, membersViceLeader],
             };
 
-           await utils.createLogger(`Uma nova equipe foi criada com o nome: ${nameTeams}`, nickname.nickname, " ", ipAddress);
-    
-    
+            await utils.createLogger(`Uma nova equipe foi criada com o nome: ${nameTeams}`, nickname.nickname, " ", ipAddress);
+
+
             const createTeams = await Teams.create(newTeams);
-    
+
             if (!createTeams) {
                 return res.status(422).json({ error: 'Ops! Parece que houve um erro, tente novamente mais tarde.' });
             }
-    
+
             return res.status(201).json({ msg: 'Equipe criada com sucesso.' });
-    
+
         } catch (error) {
             console.error('Erro ao registrar', error);
             res.status(500).json({ msg: 'Erro ao cadastrar equipe.' });
         }
-    },
-    
-    getAllTeams: async (req, res) => {
+    };
+
+    async getAllTeams(req, res) {
         try {
             const teams = await Teams.find();
             res.json(teams)
@@ -296,50 +264,17 @@ const serviceControllerTeams = {
             console.error('Usuário não encontrado', error);
             res.status(500).json({ msg: 'Usuário não encontrado' })
         }
-    },
+    };
 
-
-
-    //Função para atualizar a equipe
-    // updateTeams: async (req, res) => {
-    //     try {
-    //         const { idUser, teamsId, nameTeams, leader, viceLeader, members } = req.body;
-    //         const userAdmin = await User.findById(idUser)
-    //         const teamsUpdate = await Teams.findById(teamsId);
-
-    //         if (!teamsUpdate) {
-    //             return res.status(404).json({ msg: 'Ops! Equipe não encontrada.' });
-    //         }
-
-    //         if (userAdmin && userAdmin.userType !== 'Admin') {
-    //             return res.status(404).json({ msg: 'Ops! Parece que você não é uma administrador.' });
-    //         }
-
-    //         teamsUpdate.nameTeams = nameTeams !== "" ? nameTeams : teamsUpdate.nameTeams;
-    //         teamsUpdate.teamsType = teamsUpdate.teamsType;
-    //         teamsUpdate.leader = leader !== "" ? leader : teamsUpdate.leader;
-    //         teamsUpdate.viceLeader = viceLeader !== "" ? viceLeader : teamsUpdate.viceLeader;
-
-
-    //         await teamsUpdate.save()
-    //         res.status(200).json({ msg: 'Equipe atualizada com sucesso!' });
-
-    //     } catch (error) {
-    //         console.error('Ops! Não foi possível atualizar a equipe ou órgão.', error);
-    //         res.status(500).json({ msg: 'Ops! Não foi possível atualizar a equipe ou órgão.' })
-    //     }
-
-    // },
-
-    updateTeams: async (req, res) => {
+    async updateTeams(req, res) {
         try {
             const idUser = req.idUser;
             const { teamsId, nameTeams, leader, viceLeader, members } = req.body;
-    
+
             if (!teamsId || !nameTeams || !leader || !viceLeader) {
                 return res.status(422).json({ error: 'Preencha todos os campos obrigatórios.' });
             }
-    
+
             const userAdmin = await User.findById(idUser);
             if (!userAdmin) {
                 return res.status(422).json({ error: 'Usuário não encontrado.' });
@@ -347,22 +282,22 @@ const serviceControllerTeams = {
             if (userAdmin.userType !== 'Admin') {
                 return res.status(422).json({ error: 'Ops! Parece que você não é um administrador.' });
             }
-    
+
             const teamsUpdate = await Teams.findById(teamsId);
             if (!teamsUpdate) {
                 return res.status(404).json({ error: 'Ops! Equipe não encontrada.' });
             }
-    
+
             const nicknameLeader = await User.findOne({ nickname: leader });
             if (!nicknameLeader) {
                 return res.status(422).json({ error: 'Ops! Esse líder não existe em nossos sistemas.' });
             }
-    
+
             const nicknameViceLeader = await User.findOne({ nickname: viceLeader });
             if (!nicknameViceLeader) {
                 return res.status(422).json({ error: 'Ops! Esse vice-líder não existe em nossos sistemas.' });
             }
-    
+
             // Atualizando líder
             let updated = false;
             for (let i = 0; i < teamsUpdate.members.length; i++) {
@@ -375,7 +310,7 @@ const serviceControllerTeams = {
             if (!updated) {
                 teamsUpdate.members.push({ nickname: nicknameLeader.nickname, office: 'Líder' });
             }
-    
+
             // Atualizando vice-líder
             updated = false;
             for (let i = 0; i < teamsUpdate.members.length; i++) {
@@ -391,28 +326,27 @@ const serviceControllerTeams = {
             teamsUpdate.leader = nicknameLeader.nickname;
             teamsUpdate.viceLeader = nicknameViceLeader.nickname
             teamsUpdate.nameTeams = nameTeams || teamsUpdate.nameTeams;
-    
+
             // Atualizando o perfil dos líderes
-            await updateProfile(nicknameLeader.nickname, teamsUpdate.nameTeams);
-            await updateProfile(nicknameViceLeader.nickname, teamsUpdate.nameTeams);
-    
+            await utils.updateProfile(nicknameLeader.nickname, teamsUpdate.nameTeams);
+            await utils.updateProfile(nicknameViceLeader.nickname, teamsUpdate.nameTeams);
+
             await teamsUpdate.save();
-    
+
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
             await utils.createLogger(`A equipe ${teamsUpdate.nameTeams} foi atualizada.`, userAdmin.nickname, " ", ipAddress);
-  
+
 
             res.status(200).json({ msg: 'Equipe atualizada com sucesso!' });
-    
+
         } catch (error) {
             console.error('Ops! Não foi possível atualizar a equipe ou órgão.', error);
             res.status(500).json({ msg: 'Ops! Não foi possível atualizar a equipe ou órgão.' });
         }
-    },
-    
+    };
     //Função responsável por deletar uma equipe de acordo com o id params dela.
-    deleteTeams: async (req, res) => {
+    async deleteTeams(req, res) {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
             const { idUser, teamsId } = req.body;
@@ -436,8 +370,6 @@ const serviceControllerTeams = {
             console.error('Não foi possível deletar a equipe', error);
             res.status(500).json({ error: 'Não foi possível deletar a equipe' })
         }
-    },
+    };
 
 };
-
-module.exports = serviceControllerTeams;

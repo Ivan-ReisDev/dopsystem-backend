@@ -1,7 +1,6 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const DocsSystemSchema = new mongoose.Schema({
-
     nameDocs: {
         type: String,
         required: true
@@ -30,7 +29,5 @@ const DocsSystemSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const DocsSystem = mongoose.model('Docs', DocsSystemSchema);
-module.exports = {
-    DocsSystem,
-    DocsSystemSchema
-}
+
+export { DocsSystem, DocsSystemSchema };

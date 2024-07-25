@@ -1,28 +1,20 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const LoggerSchema = new mongoose.Schema({
-
     user: {
         type: String,
-        require: true
+        required: true
     },
-
     ip: {
         type: String,
-        require: true
+        required: true
     },
-
     loggerType: {
         type: String,
-        require: true
+        required: true
     },
-
-
-},{ timestamps: true })
-
+}, { timestamps: true });
 
 const Logger = mongoose.model('Logger', LoggerSchema);
-module.exports = {
-    Logger,
-    LoggerSchema
-}
+
+export { Logger, LoggerSchema };

@@ -1,59 +1,48 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const infoSystemSchema = new mongoose.Schema({
-
     name: {
         type: String,
-        require: true
+        required: true
     },
-
     nameOrganization: {
         type: String,
-        require: true
+        required: true
     },
-
     patents: {
         type: Array,
         required: true
     },
-
     paidPositions: {
         type: Array,
         required: true
     },
-
     teams: {
         type: Array,
         required: true
     },
-    
     emblema: {
         type: String,
-        require: false
-    }, 
+        required: false
+    },
     destaques1: {
         type: String,
-        require: false
+        required: false
     },
     destaques2: {
         type: String,
-        require: false
+        required: false
     },
     destaques3: {
         type: String,
-        require: false
+        required: false
     },
     destaques4: {
         type: String,
-        require: false
+        required: false
     },
-    
-
-},{ timestamps: true })
-
+}, { timestamps: true });
 
 const InfoSystem = mongoose.model('System', infoSystemSchema);
-module.exports = {
-    InfoSystem,
-    infoSystemSchema
-}
+
+export { InfoSystem, infoSystemSchema };

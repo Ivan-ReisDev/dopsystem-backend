@@ -1,13 +1,11 @@
-const { Teams } = require("../Models/teamsModel");
-const { User } = require("../Models/useModel");
-const { InfoSystem } = require("../Models/systemModel");
-const { Utils } = require("../utils/UserUtils")
-
+import { User } from "../Models/useModel.js";
+import { InfoSystem } from "../Models/systemModel.js";
+import { Utils } from "../utils/UserUtils.js";
 const utils = new Utils();
 
-const serviceControllerSystem = {
+export default class ServiceControllerSystem {
 
-  createInfo: async (req, res) => {
+  async createInfo(req, res) {
     try {
       const { idUser, name, patents, paidPositions, teams } = req.body;
       const nickname = await User.findOne({ idUser: idUser });
@@ -39,9 +37,9 @@ const serviceControllerSystem = {
       console.error('Erro ao registrar', error);
       res.status(500).json({ msg: 'Erro ao cadastrar equipe.' })
     }
-  },
+  };
 
-  getInfoSystem: async (req, res) => {
+  async getInfoSystem(req, res) {
     try {
       const info = await utils.getInfos()
       const systemInfo = await InfoSystem.find();
@@ -51,9 +49,9 @@ const serviceControllerSystem = {
       console.error('Informações não encontradas', error);
       res.status(500).json({ msg: 'Informações não encontradas' })
     }
-  },
+  };
 
-  getInfoSystemDpanel: async (req, res) => {
+  async getInfoSystemDpanel(req, res) {
     try {
       const info = await utils.getInfos()
       const systemInfo = await InfoSystem.find();
@@ -64,11 +62,11 @@ const serviceControllerSystem = {
       console.error('Informações não encontradas', error);
       res.status(500).json({ msg: 'Informações não encontradas' })
     }
-  },
+  };
 
-  updateInfos: async (req, res) => {
+  async updateInfos(req, res) {
     try {
-       const { destaque1, destaque2, destaque3, destaque4 } = req.body;
+      const { destaque1, destaque2, destaque3, destaque4 } = req.body;
       const userAdmin = await User.findById(req.idUser);
       const system = await InfoSystem.findOne()
 
@@ -81,14 +79,14 @@ const serviceControllerSystem = {
 
       }
 
-      system.destaques1 = destaque1 
-      system.destaques2 = destaque2 
-      system.destaques3 = destaque3 
+      system.destaques1 = destaque1
+      system.destaques2 = destaque2
+      system.destaques3 = destaque3
       system.destaques4 = destaque4
 
       await system.save();
 
-      return res.status(200).json({msg: `Informações atualizadas com sucesso.`});
+      return res.status(200).json({ msg: `Informações atualizadas com sucesso.` });
 
 
     } catch (error) {
@@ -97,9 +95,9 @@ const serviceControllerSystem = {
     }
 
 
-  },
+  };
 
-  searchUserPatent: async (req, res) => {
+  async searchUserPatent(req, res) {
     try {
       const { patent, nickname } = req.query; // Extrair patent e nickname de req.query
       const systemDb = await InfoSystem.find();
@@ -127,7 +125,5 @@ const serviceControllerSystem = {
       console.log(error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
-  },
+  };
 }
-
-module.exports = serviceControllerSystem;

@@ -1,7 +1,8 @@
-const { User } = require('../Models/useModel');
-const jwt = require("jsonwebtoken");
+import { User } from "../Models/useModel.js";
+import jwt from "jsonwebtoken"
+
 // Middleware de autorização
-const authGuard = (requiredRoles) => {
+export const authGuard = (requiredRoles) => {
     return async (req, res, next) => {
         try {
             // Obter o token do cabeçalho de autorização
@@ -48,4 +49,3 @@ const authGuard = (requiredRoles) => {
     }
 };
 
-module.exports = authGuard;

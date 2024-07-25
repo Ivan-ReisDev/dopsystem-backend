@@ -1,7 +1,8 @@
-const mongoose = require("mongoose");
-require('dotenv').config()
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+dotenv.config();
 
-async function main() {
+export const connectdb = async () => {
     try {
         const dbUser = process.env.DB_USER;
         const dbPassword = process.env.DB_PASSK;
@@ -23,27 +24,3 @@ async function main() {
         console.log(`error: ${error}`);
     }
 }
-
-module.exports = main;
-
-
-
-// const mongoose = require("mongoose");
-// require('dotenv').config()
-
-// async function main(){
-// //TESTE
-//     try {
-//         // const dbUser = process.env.DB_USER
-//         // const dbPassword = process.env.DB_PASS
-
-//          mongoose.set("strictQuery", true)
-//         await mongoose.connect(`mongodb+srv://${process.env.DB_NAME}:${process.env.DB_PASS}@cluster0.dvmxyl9.mongodb.net/?retryWrites=true&w=majority`);
-//         console.log("Banco Conectado", mongoose.connection.host);
-//     } catch (error) {
-//         console.log(`error: ${error}`);
-//     }
-// }
-
-
-// module.exports = main

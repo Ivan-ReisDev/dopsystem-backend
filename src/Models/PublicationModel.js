@@ -1,32 +1,24 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const PublicationSchema = new mongoose.Schema({
-    
     user: {
         type: String,
-        require: true
+        required: true
     },
-
     title: {
         type: String,
-        require: true
+        required: true
     },
-
     content: {
         type: String,
-        require: true
+        required: true
     },
-
     linkImg: {
         type: String,
-        require: true
+        required: true
     },
-
-},{ timestamps: true })
-
+}, { timestamps: true });
 
 const Publication = mongoose.model('Publication', PublicationSchema);
-module.exports = {
-    Publication,
-    PublicationSchema
-}
+
+export { Publication, PublicationSchema };

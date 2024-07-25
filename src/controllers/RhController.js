@@ -1,11 +1,9 @@
-const { Logger } = require('../Models/logsModel');
-const { User } = require('../Models/useModel');
-const { Requirements } = require("../Models/RequirementsModel");
-const { Teams } = require('../Models/teamsModel');
+import { User } from '../Models/useModel.js';
+import { Requirements } from '../Models/RequirementsModel.js';
 
-const serviceControllerRh = {
+export default class ServiceControllerRh{
   //Função para aprovar ou reprovar requerimentos:
-  editRequeriment: async (req, res) => {
+  async editRequeriment(req, res){
     try {
       const { idUser, idRequirements, statusRequirements } = req.body;
       const nicknameOperator = await User.findOne({ _id: idUser });
@@ -49,9 +47,9 @@ const serviceControllerRh = {
       res.status(500).json({ msg: 'Não foi possível atualizar o requerimento' })
     }
 
-  },
+  };
 
-  deleteRequeriments: async (req, res) => {
+  async deleteRequeriments(req, res){
     try {
       const { idUser, idRequirements } = req.body;
       const admin = await User.findOne({ _id: idUser });
@@ -73,9 +71,6 @@ const serviceControllerRh = {
       res.status(500).json({ error: 'Não foi possível deletar o requerimento' })
     }
 
-  },
-
-
+  };
 };
 
-module.exports = serviceControllerRh;

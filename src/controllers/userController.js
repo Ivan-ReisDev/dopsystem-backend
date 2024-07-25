@@ -1,9 +1,10 @@
-const { User } = require("../Models/useModel.js");
-const { Requirements } = require("../Models/RequirementsModel.js")
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { InfoSystem } = require('../Models/systemModel.js');
-const { Utils } = require('../utils/UserUtils.js');
+import { User } from "../Models/useModel.js";
+import { Requirements } from "../Models/RequirementsModel.js";
+import { InfoSystem } from "../Models/systemModel.js";
+import { Utils } from "../utils/UserUtils.js";
+import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
+
 
 const utils = new Utils();
 
@@ -17,8 +18,8 @@ const GenerateToken = (id) => {
   );
 };
 
-const serviceControllerUser = {
-  login: async (req, res) => {
+export default class ServiceControllerUser {
+  async login(req, res) {
     try {
       const { nick, password } = req.body;
       const origin = req.headers
@@ -48,7 +49,7 @@ const serviceControllerUser = {
         return res.status(400).json({ error: 'Nickname ou senha incorretos.' });
       }
 
-      await  utils.createLogger("Efetuou o login no sistema.", checkUser.nickname, " ", ipAddress);
+      await utils.createLogger("Efetuou o login no sistema.", checkUser.nickname, " ", ipAddress);
       const tokenActive = GenerateToken(checkUser._id);
       await utils.tokenActiveDb(checkUser.nickname, tokenActive);
 
@@ -68,14 +69,14 @@ const serviceControllerUser = {
       console.error("Erro ao efetuar o login:", error);
       res.status(500).json({ msg: "Erro ao efetuar o login." });
     }
-  },
+  };
 
-  updateUser: async (req, res) => {
+  async updateUser(req, res) {
     try {
       const { securityCode, formdata } = req.body;
       const { newUserDopSystem, newPasswordDopSystem, newPasswordDopSystemConf } = formdata;
       const nickname = await User.findOne({ nickname: newUserDopSystem });
-      
+
       if (!nickname || nickname.nickname === "DOPSystem") {
         res.status(404).json({ msg: 'Ops! Usuário não encontrado.' });
       } else {
@@ -118,16 +119,16 @@ const serviceControllerUser = {
       res.status(500).json({ msg: 'Não foi possível atualizar o usuário.' })
     }
 
-  },
+  };
   //Para deletar é necessário passar um parametro que é o ID do usuário que será deletado e o nick do usuário que irá deletar.
   // O código irá verificar se quem está deletando é admin e se quem será deletado existe no banco de dados.
-  updateUserAdmin: async (req, res) => {
+  async updateUserAdmin(req, res) {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
       const { idUser, idEdit, nickname, patent, status, tag, warnings, medals, userType } = req.body;
       const admin = await User.findOne({ _id: idUser });
       const cont = await User.findOne({ _id: idEdit });
-      if(cont._id === process.env.CONT_MASTER_ID){
+      if (cont._id === process.env.CONT_MASTER_ID) {
         return res.status(404).json({ error: 'Ops! Você não pode atualizar a conta master.' });
       }
 
@@ -162,9 +163,9 @@ const serviceControllerUser = {
       res.status(500).json({ msg: 'Não foi possível atualizar o usuário.' })
     }
 
-  },
+  };
 
-  createTag: async (req, res) => {
+  async createTag(req, res) {
     try {
       const { idUser, tag } = req.body;
       const cont = await User.findOne({ _id: idUser });
@@ -190,16 +191,16 @@ const serviceControllerUser = {
       return res.status(500).json({ error: 'Ocorreu um erro ao processar a requisição.' });
     }
 
-  },
+  };
 
-  deleteUsers: async (req, res) => {
+  async deleteUsers(req, res) {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
       const userId = req.params.userId;
-      
+
       const admin = await User.findById(req.idUser);
       const deleteUser = await User.findById(userId);
-      if(deleteUser.nickname === process.env.CONT_MASTER_ID){
+      if (deleteUser.nickname === process.env.CONT_MASTER_ID) {
         return res.status(404).json({ error: 'Ops! Você não pode excluir a conta master.' });
       }
 
@@ -212,7 +213,7 @@ const serviceControllerUser = {
 
       if (admin && admin.userType === "Admin" && deleteUser) {
         await User.findByIdAndDelete(userId);
-        await Requirements.deleteMany({promoted: deleteUser.nickname});
+        await Requirements.deleteMany({ promoted: deleteUser.nickname });
         await utils.createLogger(`Deletou o usuário ${deleteUser.nickname}`, admin.nickname, "", ipAddress)
         return res.status(200).json({ msg: 'Usuário deletedo com sucesso' });
       }
@@ -221,9 +222,9 @@ const serviceControllerUser = {
       console.error('Não foi possível deletar o usuário', error);
       res.status(500).json({ msg: 'Não foi possível deletar o usuário' })
     }
-  },
+  };
 
-  getcurrentUser: async (req, res) => {
+  async getcurrentUser(req, res) {
     try {
       const userID = req.idUser;
       const user = req.user;
@@ -233,35 +234,34 @@ const serviceControllerUser = {
       console.log('Perfil não encontrado')
     }
 
-  },
+  };
 
-  getAll: async (req, res) => {
+  async getAll(req, res) {
     try {
-        
-        const page = parseInt(req.query.page) || 1;
-        const pageSize = parseInt(req.query.pageSize) || 10;
-        const nickname = req.query.nickname; // Captura o nickname da query string
 
-        let query;
-        if (nickname) {
-            query = User.find({ nickname: nickname }).select("-password -tokenActive -tokenIsNotValide");
-        } else {
-            query = User.find().select("-password -tokenActive -tokenIsNotValide");
-        }
+      const page = parseInt(req.query.page) || 1;
+      const pageSize = parseInt(req.query.pageSize) || 10;
+      const nickname = req.query.nickname; // Captura o nickname da query string
 
-        const users = await query
-            .skip((page - 1) * pageSize)
-            .limit(pageSize);
+      let query;
+      if (nickname) {
+        query = User.find({ nickname: nickname }).select("-password -tokenActive -tokenIsNotValide");
+      } else {
+        query = User.find().select("-password -tokenActive -tokenIsNotValide");
+      }
 
-        res.json(users);
+      const users = await query
+        .skip((page - 1) * pageSize)
+        .limit(pageSize);
+
+      res.json(users);
     } catch (error) {
-        console.error('Erro ao recuperar usuários:', error); // Log mais detalhado do erro
-        res.status(500).json({ error: 'Erro ao recuperar usuários' });
+      console.error('Erro ao recuperar usuários:', error); // Log mais detalhado do erro
+      res.status(500).json({ error: 'Erro ao recuperar usuários' });
     }
-},
+  };
 
-
-  getAllNicks: async (req, res) => {
+  async getAllNicks(req, res) {
     try {
       const users = await User.find();
       // Mapeia a lista de usuários para extrair apenas os apelidos
@@ -273,9 +273,9 @@ const serviceControllerUser = {
       console.error('Erro ao buscar usuários:', error);
       return res.status(500).json({ msg: 'Erro ao buscar usuários' });
     }
-  },
+  }
 
-  searchUser: async (req, res) => {
+  async searchUser(req, res) {
     try {
       const nickname = req.query.nickname;
       const typeRequeriment = req.query.typeRequeriment;
@@ -309,28 +309,26 @@ const serviceControllerUser = {
       console.log(error);
       return res.status(500).json({ error: 'Erro interno do servidor' });
     }
-  },
+  };
 
-  permissions: async(req, res) => {
-      try {
-        const userTypes = ['Admin', 'Diretor', 'Recursos Humanos'];
-        const users = await User.find({ userType: { $in: userTypes } }).select("nickname patent userType");;
-        return res.json(users);
-        
-      } catch (error) {
-        console.log(error);
-        return res.status(500).json({ error: 'Erro interno do servidor' });
-      }
-  },
+  async permissions(req, res) {
+    try {
+      const userTypes = ['Admin', 'Diretor', 'Recursos Humanos'];
+      const users = await User.find({ userType: { $in: userTypes } }).select("nickname patent userType");;
+      return res.json(users);
 
-  logoutPass: async (req, res) => {
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ error: 'Erro interno do servidor' });
+    }
+  };
+
+  async logoutPass(req, res) {
     try {
       res.status(200).json({ message: 'Logout realizado com sucesso.' });
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
       res.status(500).json({ error: 'Erro ao fazer logout.' });
     }
-  },
+  };
 };
-
-module.exports = serviceControllerUser;

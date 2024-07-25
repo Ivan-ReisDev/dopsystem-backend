@@ -1,34 +1,31 @@
-const { User } = require("../Models/useModel.js");
-const { Logger } = require('../Models/logsModel')
-const { Classes } = require('../Models/classesModel.js')
-const { Requirements } = require("../Models/RequirementsModel");
-const { Teams } = require("../Models/teamsModel");
-const mongoose = require('mongoose');
-const { Utils } = require('../utils/UserUtils.js')
+import { User } from "../Models/useModel.js"
+import { Classes } from "../Models/classesModel.js";
+import { Requirements } from "../Models/RequirementsModel.js";
+import { Teams } from "../Models/teamsModel.js";
+import mongoose from "mongoose";
+import { Utils } from "../utils/UserUtils.js";
 
 const utils = new Utils()
 
 const updateProfileClasse = async (id, classe) => {
-    const student = await User.findById(id);
-    let newClasse = student.classes ;
-    newClasse.push(classe);
-    student.nickname = student.nickname;
-    student.classes = newClasse;
-    student.teans = student.teans;
-    student.patent = student.patent
-    student.status = student.status;
-    student.tag =  student.tag;
-    student.warnings = student.warnings;
-    student.medals = student.medals;
-    student.password = student.password;
-    student.userType = student.userType;
-    student.save()
-  
+  const student = await User.findById(id);
+  let newClasse = student.classes;
+  newClasse.push(classe);
+  student.nickname = student.nickname;
+  student.classes = newClasse;
+  student.teans = student.teans;
+  student.patent = student.patent
+  student.status = student.status;
+  student.tag = student.tag;
+  student.warnings = student.warnings;
+  student.medals = student.medals;
+  student.password = student.password;
+  student.userType = student.userType;
+  student.save()
 }
 
-const serviceControllerClasse = {
-  //student, teacher, nameClasse, team, comments
-  createClasse: async (req, res) => {
+export default class ServiceControllerClasse {
+  async createClasse(req, res) {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
       const { idUser, nameClasse, team, patent } = req.body;
@@ -67,35 +64,35 @@ const serviceControllerClasse = {
       console.error("Erro ao criar aula.", error);
       res.status(500).json({ msg: "Erro ao criar aula." });
     }
-  },
+  };
 
-  deleteClasse: async (req, res) => {
+  async deleteClasse(req, res) {
     try {
-        const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-        const { idUser, idClass } = req.body;
-        const admin = await User.findById(idUser);
-        const deleteClasse = await Classes.findById(idClass)
+      const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+      const { idUser, idClass } = req.body;
+      const admin = await User.findById(idUser);
+      const deleteClasse = await Classes.findById(idClass)
 
-        if (!deleteClasse) {
-            return res.status(404).json({ error: 'Ops! Essa aula não foi encontrada' });
-        }
-        if (admin && admin.userType !== "Admin") {
-            return res.status(404).json({ error: 'Ops! Parece que você não é uma administrador.' });
-        }
+      if (!deleteClasse) {
+        return res.status(404).json({ error: 'Ops! Essa aula não foi encontrada' });
+      }
+      if (admin && admin.userType !== "Admin") {
+        return res.status(404).json({ error: 'Ops! Parece que você não é uma administrador.' });
+      }
 
-        if (admin && admin.userType === "Admin" && deleteClasse) {
-            await Classes.findByIdAndDelete(deleteClasse._id);
-            await utils.createLogger("Excluiu a aula ", admin.nickname, deleteClasse.nameClasse, ipAddress)
-            return res.status(200).json({ msg: 'Aula deletada com sucesso.' });
-        }
+      if (admin && admin.userType === "Admin" && deleteClasse) {
+        await Classes.findByIdAndDelete(deleteClasse._id);
+        await utils.createLogger("Excluiu a aula ", admin.nickname, deleteClasse.nameClasse, ipAddress)
+        return res.status(200).json({ msg: 'Aula deletada com sucesso.' });
+      }
 
     } catch (error) {
-        console.error('Não foi possível deletar essa aula', error);
-        return res.status(500).json({ error: 'Não foi possível deletar essa aula' })
+      console.error('Não foi possível deletar essa aula', error);
+      return res.status(500).json({ error: 'Não foi possível deletar essa aula' })
     }
-},
+  };
 
-  postClasse: async (req, res) => {
+  async postClasse(req, res) {
     try {
       const { idUser, promoted, reason, classe, team } = req.body;
       const nicknameDocente = await User.findOne({ _id: idUser });
@@ -142,63 +139,62 @@ const serviceControllerClasse = {
       console.error('Erro ao postar requerimento.', error);
       res.status(500).json({ msg: 'Erro ao postar requerimento.' });
     }
-  },
+  };
 
-  postCI: async (req, res) => {
+  async postCI(req, res) {
     try {
-        const { idUser, student, reason } = req.body;
+      const { idUser, student, reason } = req.body;
 
-        if (!idUser || !reason || !student) {
-            return res.status(400).json({ error: 'Por favor preencha todos os campos solicitados' });
+      if (!idUser || !reason || !student) {
+        return res.status(400).json({ error: 'Por favor preencha todos os campos solicitados' });
+      }
+
+      const nicknameDocente = await User.findOne({ _id: idUser });
+      if (!nicknameDocente) {
+        return res.status(404).json({ error: 'Docente não encontrado.' });
+      }
+
+      const responseHabbo = await utils.connectHabbo(student.trim());
+      if (responseHabbo === "error") {
+        return res.status(404).json({ error: 'Este usuário não existe no Habbo Hotel' });
+      }
+
+      const nicknameUser = await User.findOne({ nickname: student });
+      if (nicknameUser) {
+        const response = await utils.RegisterContExist(nicknameUser.nickname, "Soldado", "Curso Inicial [C.I]");
+        if (!response.status) {
+          return res.status(400).json({ error: response.info });
         }
-
-        const nicknameDocente = await User.findOne({ _id: idUser });
-        if (!nicknameDocente) {
-            return res.status(404).json({ error: 'Docente não encontrado.' });
+      } else {
+        const registered = await utils.register(student.trim(), "Soldado");
+        if (!registered.status) {
+          return res.status(422).json({ error: registered.info });
         }
-        
-        const responseHabbo = await utils.connectHabbo(student.trim());
-        if (responseHabbo === "error") {
-            return res.status(404).json({ error: 'Este usuário não existe no Habbo Hotel' });
-        }
+      }
 
-        const nicknameUser = await User.findOne({ nickname: student });
-        if (nicknameUser) {
-            const response = await utils.RegisterContExist(nicknameUser.nickname, "Soldado", "Curso Inicial [C.I]");
-            if (!response.status) {
-                return res.status(400).json({ error: response.info });
-            }
-        } else {
-            const registered = await utils.register(student.trim(), "Soldado");
-            if (!registered.status) {
-                return res.status(422).json({ error: registered.info });
-            }
-        }
+      const newRequirement = {
+        promoted: student,
+        classe: "Curso Inicial [C.I]",
+        reason,
+        operator: nicknameDocente.nickname,
+        team: 'Corpo de Funcionários',
+        typeRequirement: "Aula",
+        status: "Aprovado"
+      };
 
-        const newRequirement = {
-            promoted: student,
-            classe: "Curso Inicial [C.I]",
-            reason,
-            operator: nicknameDocente.nickname,
-            team: 'Corpo de Funcionários',
-            typeRequirement: "Aula",
-            status: "Aprovado"
-        };
+      const createRequirement = await Requirements.create(newRequirement);
+      if (!createRequirement) {
+        return res.status(500).json({ error: 'Ops! Parece que houve um erro, tente novamente mais tarde.' });
+      }
 
-        const createRequirement = await Requirements.create(newRequirement);
-        if (!createRequirement) {
-            return res.status(500).json({ error: 'Ops! Parece que houve um erro, tente novamente mais tarde.' });
-        }
-
-        return res.status(201).json({ msg: 'Requerimento postado com sucesso.' });
+      return res.status(201).json({ msg: 'Requerimento postado com sucesso.' });
     } catch (error) {
-        console.error('Erro ao postar requerimento.', error);
-        res.status(500).json({ error: 'Erro ao postar requerimento.' });
+      console.error('Erro ao postar requerimento.', error);
+      res.status(500).json({ error: 'Erro ao postar requerimento.' });
     }
-},
+  };
 
-  
-  updateClasse: async (req, res) => {
+  async updateClasse(req, res) {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
       const { idUser, idClasse, nameClasse, team, patent } = req.body;
@@ -235,10 +231,9 @@ const serviceControllerClasse = {
       console.error('Ops! Não foi possível atualizar essa aula.', error);
       res.status(500).json({ msg: 'Ops! Não foi possível atualizar essa aula.' });
     }
-  },
+  };
 
-
-  getClasses: async (req, res) => {
+  async getClasses(req, res) {
     try {
       const users = await Classes.find();
       return res.json(users)
@@ -247,8 +242,10 @@ const serviceControllerClasse = {
       console.error('Aula não encontrado', error);
       res.status(500).json({ msg: 'Aula não encontrado' })
     }
-  },
+  };
 
-};
+}
 
-module.exports = serviceControllerClasse;
+
+
+

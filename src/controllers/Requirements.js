@@ -1,25 +1,24 @@
-const { Teams } = require("../Models/teamsModel");
-const { User } = require("../Models/useModel");
-const { Requirements } = require("../Models/RequirementsModel");
-const { InfoSystem } = require("../Models/systemModel");
-const { Utils } = require("../utils/UserUtils")
+import { User } from "../Models/useModel.js";
+import { Requirements } from "../Models/RequirementsModel.js";
+import { InfoSystem } from "../Models/systemModel.js";
+import { Utils } from "../utils/UserUtils.js";
 
-const utils = new Utils()
+const utils = new Utils();
 
-const serviceControllerRequirements = {
+export default class ServiceControllerRequirements {
     //Função responsável por criar a equioe
-    createRequirements: async (req, res) => {
+    async createRequirements(req, res) {
         try {
             const { idUser, promoted, reason } = req.body;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknamePromoted = await User.findOne({ nickname: promoted });
             const validateSuperior = await utils.isSuperior(nicknameOperator, nicknamePromoted, "Promoção");
             const validete = await utils.isDiretor(nicknameOperator.patent);
-            
+
             if (validateSuperior.isSuperior === true || nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
                     promoted,
-                    newPatent:validateSuperior.newPatent,
+                    newPatent: validateSuperior.newPatent,
                     newMotto: `${promoted} - Promovido por [${nicknameOperator.tag}] em ${utils.getCurrentDate()}`,
                     reason,
                     patentOperador: nicknameOperator.patent,
@@ -44,9 +43,9 @@ const serviceControllerRequirements = {
             console.error('Erro ao postar requerimento.', error);
             res.status(500).json({ msg: 'Erro ao postar requerimento.' });
         }
-    },
+    };
 
-    createRequirementsRelegation: async (req, res) => {
+    async createRequirementsRelegation(req, res) {
         try {
             const { idUser, promoted, reason } = req.body;
             const nicknameOperator = await User.findOne({ _id: idUser });
@@ -55,7 +54,7 @@ const serviceControllerRequirements = {
             const validateSuperior = await utils.isSuperior(nicknameOperator, nicknameRelegation, "Rebaixamento");
 
 
-            
+
             if (validateSuperior.isSuperior === true || nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
                     promoted,
@@ -84,9 +83,9 @@ const serviceControllerRequirements = {
             console.error('Erro ao postar requerimento.', error);
             res.status(500).json({ msg: 'Erro ao postar requerimento.' });
         }
-    },
+    };
 
-    createRequirementsWarning: async (req, res) => {
+    async createRequirementsWarning(req, res) {
         try {
             const { idUser, promoted, reason } = req.body;
             const nicknameOperator = await User.findOne({ _id: idUser });
@@ -122,10 +121,10 @@ const serviceControllerRequirements = {
             console.error('Erro ao postar requerimento.', error);
             res.status(500).json({ msg: 'Erro ao postar requerimento.' });
         }
-    },
+    };
 
 
-    createRequirementsResignation: async (req, res) => {
+    async createRequirementsResignation(req, res) {
         try {
             const { idUser, promoted, reason } = req.body;
             const nicknameOperator = await User.findOne({ _id: idUser });
@@ -166,9 +165,9 @@ const serviceControllerRequirements = {
             console.error('Erro ao postar requerimento.', error);
             res.status(500).json({ msg: 'Erro ao postar requerimento.' });
         }
-    },
+    };
 
-    ResignationUpdateUser: async (req, res) => {
+    async ResignationUpdateUser(req, res) {
         try {
             const { idUser } = req.body;
             const nicknameOperator = await User.findOne({ _id: idUser });
@@ -205,33 +204,33 @@ const serviceControllerRequirements = {
             res.status(500).json({ msg: 'Não foi possível atualizar o usuário.' })
         }
 
-    },
+    };
 
-    createContract: async (req, res) => {
+    async createContract(req, res) {
         try {
             const { idUser, promoted, patent, reason } = req.body;
-            
+
             // Procurar o operador pelo idUser
             const nicknameOperator = await User.findOne({ _id: idUser });
             if (!nicknameOperator) {
                 return res.status(404).json({ error: 'Operador não encontrado' });
             }
-    
+
             // Procurar o usuário promovido pelo nickname
             const nicknameRelegation = await User.findOne({ nickname: promoted });
-    
+
             // Conectar ao Habbo para verificar a existência do usuário
             const responseHabbo = await utils.connectHabbo(promoted.trim());
             if (responseHabbo === "error") {
                 return res.status(404).json({ error: 'Este usuário não existe no Habbo Hotel' });
             }
-    
+
             // Validar se o operador tem permissão para contratar o usuário promovido
             const validateSuperior = await utils.isSuperior(nicknameOperator, nicknameRelegation, "Contrato", patent, req);
             if (validateSuperior === false) {
                 return res.status(422).json({ error: 'Ops! Você não tem permissão para contratar esse usuário. Reporte o caso para algum superior.' });
             }
-    
+
             // Verificar se o usuário promovido já está registrado
             if (nicknameRelegation) {
                 const response = await utils.RegisterContExist(nicknameRelegation.nickname, patent, " ");
@@ -245,7 +244,7 @@ const serviceControllerRequirements = {
                     return res.status(422).json({ error: registrered.info });
                 }
             }
-    
+
             // Criar novo requisito de contrato
             const newRequirement = {
                 promoted,
@@ -257,26 +256,26 @@ const serviceControllerRequirements = {
                 typeRequirement: "Contrato",
                 status: "Pendente"
             };
-    
+
             // Salvar o requisito no banco de dados
             const resRequeriment = await Requirements.create(newRequirement);
             return !resRequeriment
                 ? res.status(422).json({ error: "Houve um erro, tente novamente mais tarde" })
                 : res.status(201).json({ msg: "Contrato efetuado com sucesso." });
-    
+
         } catch (error) {
             console.error("Erro ao registrar", error);
             res.status(500).json({ msg: "Erro ao efetuar cadastro" });
         }
-    },
-    
-    createSales: async (req, res) => {
+    };
+
+    async createSales(req, res) {
         try {
             const { idUser, promoted, patent, reason, price } = req.body;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknameRelegation = await User.findOne({ nickname: promoted });
             const info = await InfoSystem.findOne();
- 
+
             if (!info || !info.patents || !info.paidPositions) {
                 return res.status(500).json({ msg: 'Informações do sistema não encontradas.' });
             }
@@ -288,7 +287,7 @@ const serviceControllerRequirements = {
             }
 
             const validete = await utils.isDiretor(nicknameOperator.patent);
-           
+
             if (nicknameOperator.userType === "Admin" || validete === true) {
                 const newRequirement = {
                     promoted,
@@ -302,8 +301,8 @@ const serviceControllerRequirements = {
                     status: "Pendente"
                 };
 
-                
-               const newSale = await Requirements.create(newRequirement);
+
+                const newSale = await Requirements.create(newRequirement);
                 return !newSale
                     ? res.status(422).json({ error: "Houve um erro, tente novamente mais tarde" })
                     : res.status(201).json({ msg: "Venda efetuada com sucesso." });
@@ -316,9 +315,9 @@ const serviceControllerRequirements = {
             console.error("Erro ao registrar", error);
             res.status(500).json({ msg: "Erro ao efetuar cadastro" });
         }
-    },
+    };
 
-    getAllRequirementsPromoteds: async (req, res) => {
+    async getAllRequirementsPromoteds(req, res) {
         try {
             const statusRequirement = req.query.statusRequirement;
             const typeRequirement = req.query.typeRequirement
@@ -337,27 +336,27 @@ const serviceControllerRequirements = {
             console.error('Erro ao obter os requisitos:', error);
             res.status(500).json({ msg: 'Erro ao obter os requisitos' });
         }
-    },
+    };
 
-    getAllRequirementsTeams: async (req, res) => {
+    async getAllRequirementsTeams(req, res) {
         try {
             const teamRequirement = req.query.teamRequirement;
             const page = parseInt(req.query.page) || 1; // Página atual (padrão: 1)
             const limit = parseInt(req.query.limit) || 10; // Limite de itens por página (padrão: 10)
             const skip = (page - 1) * limit; // Quantidade de itens a pular
-    
+
             // Encontrar e paginar os requisitos
             const requirements = await Requirements.find({ team: teamRequirement })
                 .sort({ _id: -1 }) // Ordenar em ordem decrescente pelo campo _id
                 .skip(skip)
                 .limit(limit);
-    
+
             // Obter o total de requisitos para a equipe
             const totalRequirements = await Requirements.countDocuments({ team: teamRequirement });
-    
+
             // Calcular o total de páginas
             const totalPages = Math.ceil(totalRequirements / limit);
-    
+
             // Enviar a resposta paginada
             return res.json({
                 requirements,
@@ -365,14 +364,14 @@ const serviceControllerRequirements = {
                 totalPages: totalPages,
                 totalRequirements: totalRequirements
             });
-    
+
         } catch (error) {
             console.error('Erro ao obter os requisitos:', error);
             res.status(500).json({ msg: 'Erro ao obter os requisitos' });
         }
-    },
-    
-    searchRequeriments: async (req, res) => {
+    };
+
+    async searchRequeriments(req, res) {
         try {
             const nameRequeriment = req.query.promoted;
             const Requirement = await Requirements.find({ promoted: nameRequeriment });
@@ -381,8 +380,5 @@ const serviceControllerRequirements = {
             console.log(error);
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
-    },
-
+    };
 };
-
-module.exports = serviceControllerRequirements;

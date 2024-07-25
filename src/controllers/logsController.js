@@ -1,10 +1,9 @@
-const { Logger } = require('../Models/logsModel');
-const { User } = require('../Models/useModel');
+import { Logger } from '../Models/logsModel.js';
+import { User } from '../Models/useModel.js';
 
-
-const serviceControllerLogger = {
+export default class ServiceControllerLogger{
     //Função responsável por criar a equioe
-    getAllLogs: async (req, res) => {
+    async getAllLogs(req, res){
       try {
         const $nickname = req.query.nickname;
         const page = parseInt(req.query.page) || 1; // Número da página
@@ -42,18 +41,5 @@ const serviceControllerLogger = {
         console.error('Erro ao buscar logs', error);
         res.status(500).json({ msg: 'Erro ao buscar logs' });
       }
-    },
-
-    // deleteLogs: async (req, res) => {
-    //   try {
-    //     await Logger.deleteMany();
-    //     return res.status(200).json({ msg: "Deletado com sucesso" });
-    //   } catch (error) {
-    //     console.error("Erro ao deletar logs:", error);
-    //     return res.status(500).json({ msg: "Erro ao deletar logs" });
-    //   }
-    // },
-    
+    };
 };
-
-module.exports = serviceControllerLogger;
