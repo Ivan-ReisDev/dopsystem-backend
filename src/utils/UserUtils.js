@@ -206,6 +206,7 @@ export class Utils {
     if (patentPromotedIndex <= indexRealOperator || diretor === true || userAdmin.userType === "Admin") {
 
       let newIndexPatent;
+      let newPatent;
 
       switch (type) {
         case "Promoção":
