@@ -28,8 +28,8 @@ export default class ServiceControllerDocs {
     async createDocs(req, res) {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-            const { idUser, nameDocs, content, docsType, script } = req.body;
-            console.log(`idUser ${idUser} , nameDocs ${nameDocs}, content ${content}, docsType ${docsType}, script ${script}`)
+            const { nameDocs, content, docsType, script } = req.body;
+            const idUser = req.idUser;
             const nickname = await User.findOne({ _id: idUser });
             const teams = await Teams.findOne({ nameTeams: docsType });
 
@@ -108,8 +108,8 @@ export default class ServiceControllerDocs {
     async updateDocs(req, res) {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-            const { idUser, nameDocs, content, docsType, idDoc, script } = req.body;
-
+            const { nameDocs, content, docsType, idDoc, script } = req.body;
+            const idUser = req.idUser;
             // Validação do ID do documento
             if (!mongoose.Types.ObjectId.isValid(idDoc)) {
                 return res.status(400).json({ error: 'ID do documento inválido.' });
@@ -151,7 +151,8 @@ export default class ServiceControllerDocs {
     async deleteDocs(req, res) {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-            const { idUser, idDoc, idTeam } = req.body;
+            const { idDoc, idTeam } = req.body;
+            const idUser = req.idUser;
             const admin = await User.findById(idUser)
             const TeamSelect = await Teams.findById(idTeam)
             const deleteDoc = await DocsSystem.findById(idDoc)

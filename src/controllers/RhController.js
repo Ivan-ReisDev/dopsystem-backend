@@ -5,7 +5,8 @@ export default class ServiceControllerRh{
   //Função para aprovar ou reprovar requerimentos:
   async editRequeriment(req, res){
     try {
-      const { idUser, idRequirements, statusRequirements } = req.body;
+      const { idRequirements, statusRequirements } = req.body;
+      const idUser = req.idUser;
       const nicknameOperator = await User.findOne({ _id: idUser });
       const requirement = await Requirements.findById(idRequirements);
       const nickname = await User.findOne({ nickname: requirement.promoted });
@@ -51,7 +52,8 @@ export default class ServiceControllerRh{
 
   async deleteRequeriments(req, res){
     try {
-      const { idUser, idRequirements } = req.body;
+      const { idRequirements } = req.body;
+      const idUser = req.idUser;
       const admin = await User.findOne({ _id: idUser });
       const deleteRequeriment = await Requirements.findOne({ _id: idRequirements })
 

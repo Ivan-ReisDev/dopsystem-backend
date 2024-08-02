@@ -28,7 +28,8 @@ export default class ServiceControllerClasse {
   async createClasse(req, res) {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-      const { idUser, nameClasse, team, patent } = req.body;
+      const { nameClasse, team, patent } = req.body;
+      const idUser = req.idUser;
       const userAdmin = await User.findById(idUser);
       const teamsUpdate = await Teams.findOne({ nameTeams: team });
 
@@ -69,7 +70,8 @@ export default class ServiceControllerClasse {
   async deleteClasse(req, res) {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-      const { idUser, idClass } = req.body;
+      const { idClass } = req.body;
+      const idUser = req.idUser;
       const admin = await User.findById(idUser);
       const deleteClasse = await Classes.findById(idClass)
 
@@ -94,7 +96,8 @@ export default class ServiceControllerClasse {
 
   async postClasse(req, res) {
     try {
-      const { idUser, promoted, reason, classe, team } = req.body;
+      const { promoted, reason, classe, team } = req.body;
+      const idUser = req.idUser;
       const nicknameDocente = await User.findOne({ _id: idUser });
       const nicknameStudant = await User.findOne({ nickname: promoted });
       const teamDb = await Teams.findOne({ nameTeams: team });
@@ -143,8 +146,8 @@ export default class ServiceControllerClasse {
 
   async postCI(req, res) {
     try {
-      const { idUser, student, reason } = req.body;
-
+      const { student, reason } = req.body;
+      const idUser = req.idUser;
       if (!idUser || !reason || !student) {
         return res.status(400).json({ error: 'Por favor preencha todos os campos solicitados' });
       }
@@ -197,8 +200,8 @@ export default class ServiceControllerClasse {
   async updateClasse(req, res) {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-      const { idUser, idClasse, nameClasse, team, patent } = req.body;
-
+      const { idClasse, nameClasse, team, patent } = req.body;
+      const idUser = req.idUser;
       // Validação do ID do documento
       if (!mongoose.Types.ObjectId.isValid(idClasse)) {
         return res.status(400).json({ msg: 'ID da aula inválido.' });

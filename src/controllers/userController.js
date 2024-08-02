@@ -125,7 +125,8 @@ export default class ServiceControllerUser {
   async updateUserAdmin(req, res) {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-      const { idUser, idEdit, nickname, patent, status, tag, warnings, medals, userType } = req.body;
+      const idUser = req.idUser;
+      const { idEdit, nickname, patent, status, tag, warnings, medals, userType } = req.body;
       const admin = await User.findOne({ _id: idUser });
       const cont = await User.findOne({ _id: idEdit });
       if (cont._id === process.env.CONT_MASTER_ID) {
@@ -167,7 +168,8 @@ export default class ServiceControllerUser {
 
   async createTag(req, res) {
     try {
-      const { idUser, tag } = req.body;
+      const { tag } = req.body;
+      const idUser = req.idUser;
       const cont = await User.findOne({ _id: idUser });
 
       if (!cont) {

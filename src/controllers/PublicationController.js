@@ -9,7 +9,8 @@ export default class ServiceControllerPublication {
     async createPublication(req, res) {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-            const { idUser, title, content, linkImg } = req.body;
+            const { title, content, linkImg } = req.body;
+            const idUser = req.idUser;
             const nickname = await User.findOne({ _id: idUser });
             const team = await Teams.findOne({ nameTeams: "Marketing" });
 
@@ -49,7 +50,8 @@ export default class ServiceControllerPublication {
 
     async deletePublications(req, res) {
         try {
-            const { idUser, idPublication } = req.body;
+            const { idPublication } = req.body;
+            const idUser = req.idUser;
             const admin = await User.findOne({ _id: idUser });
             const deletePublication = await Publication.findOne({ _id: idPublication })
             const team = await Teams.findOne({ nameTeams: "Marketing" });

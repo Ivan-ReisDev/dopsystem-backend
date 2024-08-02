@@ -1,4 +1,3 @@
-
 import { Logger } from '../Models/logsModel.js';
 import { User } from '../Models/useModel.js';
 import { DocsSystem } from '../Models/docsModel.js';
@@ -304,24 +303,3 @@ export class Utils {
   };
 
 }
-
-// const isTokenInvalide = async (user, token) => {
-//   const userdb = await User.findOne({ nickname: user });
-//   if (!userdb.tokenIsNotValide) {
-//     userdb.tokenIsNotValide = [];
-//   }
-//   userdb.tokenActive = ""
-//   userdb.tokenIsNotValide.push(token);
-//   await userdb.save();
-//   return;
-// };
-
-// const clearTokens = async () => {
-//   try {
-//     await User.updateMany({}, { $set: { tokenActive: null, tokenIsNotValide: [] } });
-//     console.log("Tokens limpos com sucesso.");
-//   } catch (error) {
-//     console.error("Erro ao limpar os tokens:", error);
-//   }
-// };
-

@@ -9,7 +9,8 @@ export default class ServiceControllerEndorsement {
   //Função para aprovar ou reprovar requerimentos:
   async createAval(req, res) {
     try {
-      const { idUser, nicknameAval, initialDate, reason, endorsementdays } = req.body;
+      const { nicknameAval, initialDate, reason, endorsementdays } = req.body;
+      const idUser = req.idUser;
       const nicknameOperator = await User.findOne({ _id: idUser });
       const nickname = await User.findOne({ nickname: nicknameAval });
       if (!nickname || !nicknameOperator) {
@@ -44,7 +45,8 @@ export default class ServiceControllerEndorsement {
 
   async editAval(req, res) {
     try {
-      const { idUser, idAval, statusAval } = req.body;
+      const { idAval, statusAval } = req.body;
+      const idUser = req.idUser;
       const nicknameOperator = await User.findOne({ _id: idUser });
       const aval = await Endorsement.findOne({ _id: idAval })
 
@@ -79,7 +81,8 @@ export default class ServiceControllerEndorsement {
   async deleteAval(req, res) {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-      const { idUser, idAval } = req.body;
+      const { idAval } = req.body;
+      const idUser = req.idUser;
       const admin = await User.findOne({ _id: idUser });
       const aval = await Endorsement.findOne({ _id: idAval })
       if (!aval) {

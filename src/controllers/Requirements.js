@@ -9,7 +9,8 @@ export default class ServiceControllerRequirements {
     //Função responsável por criar a equioe
     async createRequirements(req, res) {
         try {
-            const { idUser, promoted, reason } = req.body;
+            const { promoted, reason } = req.body;
+            const idUser = req.idUser;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknamePromoted = await User.findOne({ nickname: promoted });
             const validateSuperior = await utils.isSuperior(nicknameOperator, nicknamePromoted, "Promoção");
@@ -47,7 +48,8 @@ export default class ServiceControllerRequirements {
 
     async createRequirementsRelegation(req, res) {
         try {
-            const { idUser, promoted, reason } = req.body;
+            const { promoted, reason } = req.body;
+            const idUser = req.idUser;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknameRelegation = await User.findOne({ nickname: promoted });
             const validete = await utils.isDiretor(nicknameOperator.patent);
@@ -87,7 +89,8 @@ export default class ServiceControllerRequirements {
 
     async createRequirementsWarning(req, res) {
         try {
-            const { idUser, promoted, reason } = req.body;
+            const { promoted, reason } = req.body;
+            const idUser = req.idUser;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknameRelegation = await User.findOne({ nickname: promoted });
 
@@ -126,7 +129,8 @@ export default class ServiceControllerRequirements {
 
     async createRequirementsResignation(req, res) {
         try {
-            const { idUser, promoted, reason } = req.body;
+            const { promoted, reason } = req.body;
+            const idUser = req.idUser;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknameRelegation = await User.findOne({ nickname: promoted });
 
@@ -208,8 +212,8 @@ export default class ServiceControllerRequirements {
 
     async createContract(req, res) {
         try {
-            const { idUser, promoted, patent, reason } = req.body;
-
+            const { promoted, patent, reason } = req.body;
+            const idUser = req.idUser;
             // Procurar o operador pelo idUser
             const nicknameOperator = await User.findOne({ _id: idUser });
             if (!nicknameOperator) {
@@ -271,7 +275,8 @@ export default class ServiceControllerRequirements {
 
     async createSales(req, res) {
         try {
-            const { idUser, promoted, patent, reason, price } = req.body;
+            const { promoted, patent, reason, price } = req.body;
+            const idUser = req.idUser;
             const nicknameOperator = await User.findOne({ _id: idUser });
             const nicknameRelegation = await User.findOne({ nickname: promoted });
             const info = await InfoSystem.findOne();

@@ -6,8 +6,6 @@ export const authGuard = (requiredRoles) => {
     return async (req, res, next) => {
         try {
             // Obter o token do cabeçalho de autorização
-
-            
             const authHeader = req.headers["authorization"];
             if (!authHeader) {
                 return res.status(401).json({ errors: ["Acesso negado!"] });

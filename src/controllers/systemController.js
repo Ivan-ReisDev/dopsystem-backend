@@ -7,8 +7,9 @@ export default class ServiceControllerSystem {
 
   async createInfo(req, res) {
     try {
-      const { idUser, name, patents, paidPositions, teams } = req.body;
-      const nickname = await User.findOne({ idUser: idUser });
+      const { name, patents, paidPositions, teams } = req.body;
+      const idUser = req.idUser;
+      const nickname = await User.findOne({ _id: idUser });
 
       if (nickname && nickname.userType !== "Admin") {
         return res.status(422).json({ error: 'Ops! Você não é um administrador.' })
