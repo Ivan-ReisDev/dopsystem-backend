@@ -44,7 +44,7 @@ export default class ServiceControllerTeams {
         }
     };
 
-
+//commit
     async RemoveUserTeams(req, res) {
         try {
             const { idUser, nickMember, idTeams } = req.body;
