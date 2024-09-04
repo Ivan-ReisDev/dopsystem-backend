@@ -75,11 +75,8 @@ export default class ServiceControllerSystem {
         return res.status(404).json({ error: 'Ops! Usuário não encontrado.' });
       }
 
-      if (userAdmin.userType !== "Admin") {
-        return res.status(403).json({ msg: 'Ops! Parece que você não é um administrador.' });
-
-      }
-
+      if (userAdmin.userType === "Admin" || userAdmin.userType === "Diretor") {
+        
       system.destaques1 = destaque1
       system.destaques2 = destaque2
       system.destaques3 = destaque3
@@ -88,8 +85,10 @@ export default class ServiceControllerSystem {
       await system.save();
 
       return res.status(200).json({ msg: `Informações atualizadas com sucesso.` });
+    
+    }
 
-
+      return res.status(403).json({ msg: 'Ops! Parece que você não é um administrador.' });
     } catch (error) {
       console.error('Ops! Não foi possível atualizar o documento.', error);
       res.status(500).json({ msg: 'Ops! Não foi possível atualizar o documento.' });
