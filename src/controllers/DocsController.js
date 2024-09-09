@@ -49,6 +49,7 @@ export default class ServiceControllerDocs {
                     docsType: docsType,
                     status: "Ativo",
                     script,
+                    url: utils.createURL(nameDocs)
                 };
                 await utils.createLogger("Criou um novo documento", nickname.nickname, nameDocs, ipAddress);
                 const docCriado = await DocsSystem.create(newDoc);
@@ -134,6 +135,7 @@ export default class ServiceControllerDocs {
                 docUpdate.content = content || docUpdate.content;
                 docUpdate.docsType = docsType || docUpdate.docsType;
                 docUpdate.script = script !== undefined ? script : docUpdate.script;
+                docUpdate.url = docUpdate.nameDocs !== nameDocs ? utils.createURL(nameDocs) : docUpdate.nameDocs;
 
                 await docUpdate.save();
                 await utils.createLogger("Editou o documento", userAdmin.nickname, docUpdate.nameDocs, ipAddress);

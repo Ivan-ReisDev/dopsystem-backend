@@ -25,6 +25,11 @@ const DocsSystemSchema = new mongoose.Schema({
     script: {
         type: Boolean,
         required: true,
+    },
+
+    url: {
+        type: String,
+        required: true,
     }
 }, { timestamps: true });
 
