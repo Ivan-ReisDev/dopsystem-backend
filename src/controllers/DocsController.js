@@ -233,12 +233,12 @@ export default class ServiceControllerDocs {
 
     async searchDocCompleted(req, res) {
         try {
-            const document = req.query.idDocument;
+            const document = req.query.urlDocument;
 
             if (!document) {
                 return res.status(500).json({ error: 'Informações do sistema não encontradas.' });
             }
-            const docsType = await DocsSystem.findOne({ _id: document });
+            const docsType = await DocsSystem.findOne({ url: document });
             return res.json(docsType);
 
         } catch (error) {
@@ -246,4 +246,5 @@ export default class ServiceControllerDocs {
             return res.status(500).json({ error: 'Erro interno do servidor' });
         }
     };
+   
 }

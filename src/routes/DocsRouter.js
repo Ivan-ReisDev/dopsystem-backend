@@ -12,5 +12,4 @@ DocsRouter.route('/delete/docs').delete(authGuard(['Admin', 'Diretor', 'User', '
 DocsRouter.route('/doc/search').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerDocs.searchDoc(req, res));
 DocsRouter.route('/doc').get(authGuard(['Admin', 'Diretor', 'User', 'Recursos Humanos']),(req, res) => serviceControllerDocs.searchDocCompleted(req, res));
 
-
 export default DocsRouter;
