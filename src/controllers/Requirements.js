@@ -6,7 +6,7 @@ import { Utils } from "../utils/UserUtils.js";
 const utils = new Utils();
 
 export default class ServiceControllerRequirements {
-    //Função responsável por criar a equioe
+    
     async createRequirements(req, res) {
         try {
             const { promoted, reason } = req.body;

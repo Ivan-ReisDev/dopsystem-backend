@@ -243,11 +243,13 @@ export default class ServiceControllerTeams {
         await utils.updateProfile(nicknameLeader.nickname, nameTeams);
         await utils.updateProfile(nicknameViceLeader.nickname, nameTeams);
 
+
         const newTeams = {
           nameTeams: nameTeams,
           leader: leader,
           viceLeader: viceLeader,
           members: [membersLeader, membersViceLeader],
+          url: utils.createURL(nameTeams)
         };
 
         await utils.createLogger(
@@ -304,9 +306,12 @@ export default class ServiceControllerTeams {
       }
       if (userAdmin.userType === "Admin" || userAdmin.userType === "Diretor") {
         const teamsUpdate = await Teams.findById(teamsId);
+
         if (!teamsUpdate) {
           return res.status(404).json({ error: "Ops! Equipe não encontrada." });
         }
+
+        const newURL = teamsUpdate.nameTeams !== nameTeams ? utils.createURL(nameTeams) : teamsUpdate.url; 
 
         const nicknameLeader = await User.findOne({ nickname: leader });
         if (!nicknameLeader) {
@@ -362,6 +367,7 @@ export default class ServiceControllerTeams {
         teamsUpdate.leader = nicknameLeader.nickname;
         teamsUpdate.viceLeader = nicknameViceLeader.nickname;
         teamsUpdate.nameTeams = nameTeams || teamsUpdate.nameTeams;
+        teamsUpdate.url = newURL;
 
         // Atualizando o perfil dos líderes
         await utils.updateProfile(

@@ -17,6 +17,11 @@ const teamsSchema = new mongoose.Schema({
         type: Array,
         required: false
     },
+    url: {
+        type: String,
+        required: true
+
+    }
 }, { timestamps: true });
 
 const Teams = mongoose.model('Teams', teamsSchema);
