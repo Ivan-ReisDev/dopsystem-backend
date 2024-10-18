@@ -17,7 +17,6 @@ const GenerateToken = (id) => {
     }
   );
 };
-
 export default class ServiceControllerUser {
   async login(req, res) {
     try {
@@ -258,7 +257,7 @@ export default class ServiceControllerUser {
 
       res.json(users);
     } catch (error) {
-      console.error('Erro ao recuperar usuários:', error); // Log mais detalhado do erro
+      console.error('Erro ao recuperar usuários:', error); 
       res.status(500).json({ error: 'Erro ao recuperar usuários' });
     }
   };

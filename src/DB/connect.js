@@ -5,15 +5,14 @@ dotenv.config();
 export const connectdb = async () => {
     try {
         const dbUser = process.env.DB_USER;
-        const dbPassword = process.env.DB_PASSK;
-        const dbName = process.env.DB_NAMEK;
+        const dbPassword = process.env.DB_PASS;
         const dbHost = process.env.DB_HOST;
 
         mongoose.set("strictQuery", true);
 
-        const uri = `mongodb://${dbUser}:${encodeURIComponent(dbPassword)}@${dbHost}/${dbName}?retryWrites=true&w=majority`;
+        const url = `mongodb+srv://${dbUser}:${dbPassword}@${dbHost}/?retryWrites=true&w=majority&appName=Cluster0`;;
 
-        await mongoose.connect(uri, {
+        await mongoose.connect(url, {
             useNewUrlParser: true,
             useUnifiedTopology: true,
             //serverSelectionTimeoutMS: 600000  
