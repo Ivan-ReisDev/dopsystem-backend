@@ -3,9 +3,14 @@ import { Teams } from '../Models/teamsModel.js';
 import { Publication } from '../Models/PublicationModel.js';
 import { Utils } from '../utils/UserUtils.js';
 
-const utils = new Utils();
 
 export default class ServiceControllerPublication {
+    utils;
+
+    constructor(){
+        this.utils = new Utils();
+    }
+
     async createPublication(req, res) {
         try {
             const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -13,7 +18,7 @@ export default class ServiceControllerPublication {
             const idUser = req.idUser;
             const nickname = await User.findOne({ _id: idUser });
             const team = await Teams.findOne({ nameTeams: "Marketing" });
-
+ 
             if (!idUser || !title || !content || !linkImg) {
                 return res.status(422).json({ error: 'Preencha todos os campos' })
             }
@@ -36,7 +41,7 @@ export default class ServiceControllerPublication {
                     return res.status(422).json({ error: 'Ops! Parece que houve um erro, tente novamente mais tarde.' })
                 }
 
-                await utils.createLogger("Acabou de criar uma publicação", nickname.nickname, title, ipAddress)
+                await this.utils.createLogger("Acabou de criar uma publicação", nickname.nickname, title, ipAddress)
                 return res.status(201).json({ msg: 'Publicação criada com sucesso.' })
             }
 
@@ -64,7 +69,7 @@ export default class ServiceControllerPublication {
                 return res.status(200).json({ msg: 'Publicação deleteda com sucesso' });
             }
 
-            await utils.createLogger("Acabou de criar uma publicação", admin.nickname, deletePublication.title, ipAddress)
+            await this.utils.createLogger("Acabou de criar uma publicação", admin.nickname, deletePublication.title, ipAddress)
             return res.status(404).json({ error: 'Ops! Você não tem permissão para excluir essa publicação.' })
 
         } catch (error) {

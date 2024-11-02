@@ -5,7 +5,7 @@ import { Teams } from "../Models/teamsModel.js";
 import mongoose from "mongoose";
 import { Utils } from "../utils/UserUtils.js";
 
-const utils = new Utils()
+
 
 const updateProfileClasse = async (id, classe) => {
   const student = await User.findById(id);
@@ -25,6 +25,12 @@ const updateProfileClasse = async (id, classe) => {
 }
 
 export default class ServiceControllerClasse {
+  utils 
+  constructor(){
+    this.utils = new Utils()
+
+  }
+ 
   async createClasse(req, res) {
     try {
       const ipAddress = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -34,7 +40,7 @@ export default class ServiceControllerClasse {
       const teamsUpdate = await Teams.findOne({ nameTeams: team });
 
       if (!nameClasse || !team || !patent || !userAdmin) {
-        return res.status(422).json({ error: "Por favor preencha todos os campos." });
+        return res.status(422).json({ error: "Por favor preencha todos os campos" });
       }
 
       const classe = await Classes.findOne({ nameClasse: nameClasse });
@@ -51,7 +57,7 @@ export default class ServiceControllerClasse {
         };
 
         const createClasse = await Classes.create(newClasse);
-        await utils.createLogger("Criou uma nova aula", userAdmin.nickname, nameClasse, ipAddress);
+        await this.utils.createLogger("Criou uma nova aula", userAdmin.nickname, nameClasse, ipAddress);
         return !createClasse
           ? res.status(422).json({ error: "Houve um erro, tente novamente mais tarde" })
           : res.status(201).json({ msg: "Aula criada com sucesso." });
@@ -84,7 +90,7 @@ export default class ServiceControllerClasse {
 
       if (admin && admin.userType === "Admin" && deleteClasse) {
         await Classes.findByIdAndDelete(deleteClasse._id);
-        await utils.createLogger("Excluiu a aula ", admin.nickname, deleteClasse.nameClasse, ipAddress)
+        await this.utils.createLogger("Excluiu a aula ", admin.nickname, deleteClasse.nameClasse, ipAddress)
         return res.status(200).json({ msg: 'Aula deletada com sucesso.' });
       }
 
@@ -157,19 +163,19 @@ export default class ServiceControllerClasse {
         return res.status(404).json({ error: 'Docente não encontrado.' });
       }
 
-      const responseHabbo = await utils.connectHabbo(student.trim());
+      const responseHabbo = await this.utils.connectHabbo(student.trim());
       if (responseHabbo === "error") {
         return res.status(404).json({ error: 'Este usuário não existe no Habbo Hotel' });
       }
 
       const nicknameUser = await User.findOne({ nickname: student });
       if (nicknameUser) {
-        const response = await utils.RegisterContExist(nicknameUser.nickname, "Soldado", "Curso Inicial [C.I]");
+        const response = await this.utils.RegisterContExist(nicknameUser.nickname, "Soldado", "Curso Inicial [C.I]");
         if (!response.status) {
           return res.status(400).json({ error: response.info });
         }
       } else {
-        const registered = await utils.register(student.trim(), "Soldado");
+        const registered = await this.utils.register(student.trim(), "Soldado");
         if (!registered.status) {
           return res.status(422).json({ error: registered.info });
         }
@@ -220,7 +226,7 @@ export default class ServiceControllerClasse {
       }
 
       if (userAdmin.userType === 'Admin' || (teamUpdate.leader === userAdmin.nickname)) {
-        await utils.createLogger("Editou o aula", userAdmin.nickname, classeUpdate.team, ipAddress);
+        await this.utils.createLogger("Editou o aula", userAdmin.nickname, classeUpdate.team, ipAddress);
         classeUpdate.nameClasse = nameClasse || classeUpdate.nameClasse;
         classeUpdate.team = team || classeUpdate.team;
         classeUpdate.patent = patent || classeUpdate.patent;

@@ -12,11 +12,7 @@ export const connectdb = async () => {
 
         const url = `mongodb+srv://${dbUser}:${dbPassword}@${dbHost}/?retryWrites=true&w=majority&appName=Cluster0`;;
 
-        await mongoose.connect(url, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            //serverSelectionTimeoutMS: 600000  
-        });
+        await mongoose.connect(url);
 
         console.log("Banco Conectado", mongoose.connection.host);
     } catch (error) {
