@@ -22,3 +22,4 @@ app.use('/api', AppRoutes);
 app.listen(port, () => {
   console.log(`Servidor HTTP online na porta ${port}, acesse: http://localhost:${port}/`);
 });
+//aa
