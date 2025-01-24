@@ -9,9 +9,10 @@ import RhRouter from "./RhRouter.js";
 import SystemRouter from "./SystemRouter.js";
 import TeamsRouter from "./TeamsRouter.js";
 import UserRouter from "./UserRouter.js";
+import ImagesRouter from "./ImagesRouter.js";
 
 const AppRoutes = Router();
 
-AppRoutes.use("/", ClasseRouter, DocsRouter, EndorsementRouter, LoggerRouter, PublicationRouter, RequirementsRouter, RhRouter, SystemRouter, TeamsRouter, UserRouter);
+AppRoutes.use("/", ClasseRouter, DocsRouter, EndorsementRouter, LoggerRouter, PublicationRouter, RequirementsRouter, RhRouter, SystemRouter, TeamsRouter, UserRouter, ImagesRouter);
 
 export default AppRoutes;
